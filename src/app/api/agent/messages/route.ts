@@ -53,10 +53,12 @@ export async function POST(request: NextRequest) {
 
     const userMessage = await userMessageResponse.json();
 
-    // Step 2: Wait for agent to process and respond (poll for agent response)
-    let agentResponse = null;
-    const maxAttempts = 30; // Wait up to ~60 seconds
+    // Step 2: Wait for agent to complete all processing and return the final response
+    let allAgentResponses: any[] = [];
+    const maxAttempts = 60; // 2 minutes max
     const pollDelay = 2000; // 2 seconds between polls
+    let lastResponseCount = 0;
+    let stableAttempts = 0;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await new Promise(resolve => setTimeout(resolve, pollDelay));
@@ -71,37 +73,42 @@ export async function POST(request: NextRequest) {
       if (messagesResponse.ok) {
         const messages = await messagesResponse.json();
 
-        // Find the most recent agent response that came after our user message
+        // Find all agent responses that came after our user message
         const userMessageTime = new Date(userMessage.created_at);
-        agentResponse = messages.find((msg: any) =>
-          msg.role === 'agent' &&
-          new Date(msg.created_at) > userMessageTime
-        );
+        allAgentResponses = messages
+          .filter((msg: any) =>
+            msg.role === 'agent' &&
+            new Date(msg.created_at) > userMessageTime
+          )
+          .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-        // Debug logging
-        console.log('Polling attempt:', attempt + 1);
-        console.log('User message time:', userMessageTime);
-        console.log('Messages found:', messages.length);
-        console.log('Agent responses found:', messages.filter((msg: any) => msg.role === 'agent').length);
-        if (agentResponse) {
-          console.log('Found agent response:', agentResponse.content?.substring(0, 100) + '...');
-        }
-
-        if (agentResponse) {
-          break;
+        // Check if responses have stabilized (no new responses for a while)
+        if (allAgentResponses.length > 0) {
+          if (allAgentResponses.length === lastResponseCount) {
+            stableAttempts++;
+            // If stable for 10 attempts (20 seconds), agent is probably done
+            if (stableAttempts >= 10) {
+              break;
+            }
+          } else {
+            stableAttempts = 0;
+            lastResponseCount = allAgentResponses.length;
+          }
         }
       }
     }
 
-    if (!agentResponse) {
+    if (allAgentResponses.length === 0) {
       return NextResponse.json(
         { error: 'Agent did not respond within expected time' },
         { status: 408 }
       );
     }
 
-    return NextResponse.json(agentResponse);
-  } catch (error) {
+    // Return the last (final) response from the agent
+    const finalResponse = allAgentResponses[allAgentResponses.length - 1];
+    return NextResponse.json(finalResponse);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to send message to agent' },
       { status: 500 }
@@ -153,7 +160,7 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch messages from agent' },
       { status: 500 }

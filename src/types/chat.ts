@@ -2,8 +2,9 @@ export interface Message {
   id: number;
   role: 'user' | 'agent' | 'system';
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
+  intermediateResponses?: AgentResponse[];
 }
 
 export interface AgentResponse {
@@ -11,10 +12,12 @@ export interface AgentResponse {
   agent_name: string;
   role: 'user' | 'agent' | 'system';
   content: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   created_at: string;
+  intermediateResponses?: AgentResponse[];
 }
 
 export interface ApiError {
-  message: string;
+  error?: string;
+  message?: string;
 }

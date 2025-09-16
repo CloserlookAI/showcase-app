@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Message } from '@/types/chat';
+import { Message, AgentResponse } from '@/types/chat';
 import { sendMessageToAgent } from '@/lib/api';
 
 export default function ChatInterface() {
@@ -12,24 +12,25 @@ export default function ChatInterface() {
   const [thinkingText, setThinkingText] = useState('Agent is thinking...');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const thinkingPhrases = [
-    'Agent is thinking...',
-    'Processing your request...',
-    'Computing response...',
-    'Working on it...',
-    'Gathering information...',
-    'Executing remote tasks...'
-  ];
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
+    const thinkingPhrases = [
+      'Agent is thinking...',
+      'Processing your request...',
+      'Computing response...',
+      'Working on it...',
+      'Gathering information...',
+      'Executing remote tasks...'
+    ];
+
     let interval: NodeJS.Timeout;
     if (isLoading) {
       interval = setInterval(() => {
@@ -52,7 +53,7 @@ export default function ChatInterface() {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now(),
+      id: Date.now() + Math.random(), // Ensure uniqueness
       role: 'user',
       content: input.trim(),
       created_at: new Date().toISOString(),
@@ -64,8 +65,9 @@ export default function ChatInterface() {
     setError(null);
 
     try {
+      // Send message and wait for the final agent response (API handles all polling)
       const response = await sendMessageToAgent(input.trim());
-      
+
       const agentMessage: Message = {
         id: response.id,
         role: response.role,
@@ -116,9 +118,9 @@ export default function ChatInterface() {
             </div>
           )}
 
-          {messages.map((message) => (
+          {messages.map((message, index) => (
             <div
-              key={message.id}
+              key={`${message.id}-${index}`}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom duration-300`}
             >
               <div className={`flex items-start space-x-3 max-w-md lg:max-w-2xl ${
@@ -141,6 +143,7 @@ export default function ChatInterface() {
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+
                   <p className={`text-xs mt-2 ${
                     message.role === 'user' ? 'text-gray-300' : 'text-gray-500'
                   }`}>
