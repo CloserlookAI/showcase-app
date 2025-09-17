@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatNumber } from "@/lib/utils";
-import { useNewsData, useStockData } from "@/hooks/useStockData";
+import { useNewsData } from "@/hooks/useNewsData";
 import {
   Newspaper,
   ExternalLink,
@@ -41,7 +41,6 @@ ChartJS.register(
 
 export default function NewsSection() {
   const { data: newsData, loading: newsLoading, error: newsError } = useNewsData('LWAY', 20);
-  const { data: stockData } = useStockData('LWAY');
 
   if (newsLoading) {
     return (
@@ -83,12 +82,6 @@ export default function NewsSection() {
               <p className="text-gray-600">Latest company and market updates</p>
             </div>
           </div>
-          {stockData && (
-            <div className="text-right">
-              <div className="text-lg font-bold text-[#000721]">{formatCurrency(stockData.currentPrice)}</div>
-              <div className="text-sm text-gray-600">LWAY • {stockData.symbol}</div>
-            </div>
-          )}
         </div>
       </div>
 

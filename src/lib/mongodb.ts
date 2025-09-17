@@ -81,7 +81,7 @@ export function parseThousands(value: string | number): number {
 export function parsePercentage(value: string): number {
   if (!value || value === '') return 0;
 
-  // Remove % sign and convert to number
+  // Remove % sign and convert to number (e.g., "15%" becomes 15)
   const cleaned = value.replace('%', '');
   return parseFloat(cleaned) || 0;
 }

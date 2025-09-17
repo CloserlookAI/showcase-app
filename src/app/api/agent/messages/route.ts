@@ -23,15 +23,17 @@ export async function POST(request: NextRequest) {
     const { content } = await request.json();
 
     // Step 1: Send user message
-    const userMessageResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/messages`, {
+    const userMessageResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/responses`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${BEARER_TOKEN}`,
       },
       body: JSON.stringify({
-        role: 'user',
-        content,
+        input: {
+          text: content,
+        },
+        background: true,
       }),
     });
 
@@ -51,63 +53,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userMessage = await userMessageResponse.json();
+    const initialResponse = await userMessageResponse.json();
 
-    // Step 2: Wait for agent to complete all processing and return the final response
-    let allAgentResponses: any[] = [];
+    // Step 2: Poll the specific response until it's completed
+    let finalResponse = initialResponse;
     const maxAttempts = 60; // 2 minutes max
     const pollDelay = 2000; // 2 seconds between polls
-    let lastResponseCount = 0;
-    let stableAttempts = 0;
 
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // Poll until the response is completed
+    for (let attempt = 0; attempt < maxAttempts && finalResponse.status !== 'completed'; attempt++) {
       await new Promise(resolve => setTimeout(resolve, pollDelay));
 
-      // Get recent messages
-      const messagesResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/messages`, {
+      // Poll the list and find our response by ID
+      const pollResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/responses`, {
         headers: {
           'Authorization': `Bearer ${BEARER_TOKEN}`,
         },
       });
 
-      if (messagesResponse.ok) {
-        const messages = await messagesResponse.json();
+      if (pollResponse.ok) {
+        const allResponses = await pollResponse.json();
+        const ourResponse = allResponses.find((r: any) => r.id === initialResponse.id);
 
-        // Find all agent responses that came after our user message
-        const userMessageTime = new Date(userMessage.created_at);
-        allAgentResponses = messages
-          .filter((msg: any) =>
-            msg.role === 'agent' &&
-            new Date(msg.created_at) > userMessageTime
-          )
-          .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        if (ourResponse) {
+          finalResponse = ourResponse;
 
-        // Check if responses have stabilized (no new responses for a while)
-        if (allAgentResponses.length > 0) {
-          if (allAgentResponses.length === lastResponseCount) {
-            stableAttempts++;
-            // If stable for 10 attempts (20 seconds), agent is probably done
-            if (stableAttempts >= 10) {
-              break;
-            }
-          } else {
-            stableAttempts = 0;
-            lastResponseCount = allAgentResponses.length;
+          // If completed or failed, break out of the loop
+          if (finalResponse.status === 'completed' || finalResponse.status === 'failed') {
+            break;
           }
         }
       }
     }
 
-    if (allAgentResponses.length === 0) {
+    if (finalResponse.status === 'failed') {
       return NextResponse.json(
-        { error: 'Agent did not respond within expected time' },
+        { error: 'Agent failed to process the request' },
+        { status: 500 }
+      );
+    }
+
+    if (finalResponse.status !== 'completed') {
+      return NextResponse.json(
+        { error: 'Agent did not complete response within expected time' },
         { status: 408 }
       );
     }
 
-    // Return the last (final) response from the agent
-    const finalResponse = allAgentResponses[allAgentResponses.length - 1];
-    return NextResponse.json(finalResponse);
+    // Transform the response to match the expected frontend format
+    const transformedResponse = {
+      id: parseInt(finalResponse.id.replace(/-/g, '').substring(0, 10), 16), // Convert UUID to number-like ID
+      role: 'agent' as const,
+      content: finalResponse.output?.text || '',
+      metadata: finalResponse.metadata || {},
+      created_at: finalResponse.created_at,
+      agent_name: finalResponse.agent_name
+    };
+
+    return NextResponse.json(transformedResponse);
   } catch {
     return NextResponse.json(
       { error: 'Failed to send message to agent' },
@@ -136,7 +139,7 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '100';
     const offset = searchParams.get('offset') || '0';
 
-    const response = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/messages?limit=${limit}&offset=${offset}`, {
+    const response = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/responses?limit=${limit}&offset=${offset}`, {
       headers: {
         'Authorization': `Bearer ${BEARER_TOKEN}`,
       },
@@ -159,7 +162,20 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+
+    // Transform the responses to match the expected frontend format
+    const transformedData = Array.isArray(data)
+      ? data.map((response: any) => ({
+          id: parseInt(response.id.replace(/-/g, '').substring(0, 10), 16), // Convert UUID to number-like ID
+          role: response.input ? 'agent' : 'system', // Determine role based on response structure
+          content: response.output?.text || response.input?.text || '',
+          metadata: response.metadata || {},
+          created_at: response.created_at,
+          agent_name: response.agent_name
+        }))
+      : data;
+
+    return NextResponse.json(transformedData);
   } catch {
     return NextResponse.json(
       { error: 'Failed to fetch messages from agent' },

@@ -6,7 +6,6 @@ import OverviewSection from './dashboard/OverviewSection';
 import FinancialSection from './dashboard/FinancialSection';
 import IncomeSection from './dashboard/IncomeSection';
 import AssetsSection from './dashboard/AssetsSection';
-import RevenueSection from './dashboard/RevenueSection';
 import ReviewsSection from './dashboard/ReviewsSection';
 import NewsSection from './dashboard/NewsSection';
 
@@ -35,8 +34,6 @@ export default function LifewayDashboard() {
         return <IncomeSection />;
       case 'assets':
         return <AssetsSection />;
-      case 'revenue':
-        return <RevenueSection />;
       case 'reviews':
         return <ReviewsSection />;
       case 'news':

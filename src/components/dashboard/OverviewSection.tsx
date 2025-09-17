@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import { useFinancialData } from "@/hooks/useFinancialData";
-import { useStockData, useNewsData } from "@/hooks/useStockData";
+import { useNewsData } from "@/hooks/useNewsData";
 import {
   TrendingUp,
   TrendingDown,
@@ -52,7 +52,6 @@ ChartJS.register(
 export default function OverviewSection() {
   const [selectedYear, setSelectedYear] = useState<number>(2024);
   const { data: financialData, loading, error } = useFinancialData(selectedYear);
-  const { data: stockData, loading: stockLoading, error: stockError } = useStockData('LWAY');
   const { data: newsData, loading: newsLoading } = useNewsData('LWAY', 5);
 
   const availableYears = [2024, 2023, 2022, 2021, 2020];
@@ -87,13 +86,13 @@ export default function OverviewSection() {
 
   return (
     <div className="space-y-6">
-      {/* Stock Price Header */}
+      {/* Company Header */}
       <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[#000721]">Lifeway Foods, Inc.</h1>
+            <h1 className="text-2xl font-bold text-[#000721]">Company Financial Overview</h1>
             <div className="flex items-center space-x-4">
-              <p className="text-gray-600">NASDAQ: LWAY • Year {financialData.year}</p>
+              <p className="text-gray-600">Financial Year {financialData.year}</p>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
@@ -104,32 +103,6 @@ export default function OverviewSection() {
                 ))}
               </select>
             </div>
-          </div>
-          <div className="text-right">
-            {stockLoading ? (
-              <div className="text-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#000721] mx-auto" />
-                <p className="text-sm text-gray-600 mt-1">Loading stock data...</p>
-              </div>
-            ) : stockError || !stockData ? (
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-400">Stock data unavailable</div>
-                <p className="text-xs text-gray-500 mt-1">Unable to fetch current price</p>
-              </div>
-            ) : (
-              <>
-                <div className="text-3xl font-bold text-[#000721]">{formatCurrency(stockData.currentPrice)}</div>
-                <div className={`flex items-center justify-end space-x-1 ${stockData.priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {stockData.priceChange >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  <span className="font-medium">
-                    {stockData.priceChange >= 0 ? '+' : ''}{formatCurrency(stockData.priceChange)} ({formatPercent(stockData.priceChangePercent)})
-                  </span>
-                </div>
-                <div className="text-xs text-gray-600 mt-1">
-                  Vol: {formatNumber(stockData.volume)}
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -184,9 +157,9 @@ export default function OverviewSection() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         {/* Financial Performance */}
-        <Card className="lg:col-span-2 bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
+        <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 text-[#000721]">
               <BarChart3 className="w-5 h-5" />
@@ -233,80 +206,12 @@ export default function OverviewSection() {
                     <span className="text-sm text-gray-700">Shareholders' Equity</span>
                     <span className="text-sm font-semibold text-[#000721] bg-blue-50 px-2 py-1 rounded">{formatCurrency(financialData.shareholdersEquity * 1000)}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700">Outstanding Shares</span>
-                    <span className="text-sm font-semibold text-[#000721] bg-blue-50 px-2 py-1 rounded">{formatNumber(financialData.outstandingShares)}</span>
-                  </div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Stock Information */}
-        <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-[#000721]">
-              <Star className="w-5 h-5" />
-              <span>Stock Information</span>
-            </CardTitle>
-            <CardDescription className="text-gray-600">Real-time stock metrics from Yahoo Finance</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stockData ? (
-                <>
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                    <div>
-                      <div className="font-medium text-sm text-gray-900">Current Price</div>
-                      <div className="text-xs text-gray-600">LWAY Stock Price</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-[#000721] text-lg">{formatCurrency(stockData.currentPrice)}</div>
-                      <div className={`text-xs ${stockData.priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {stockData.priceChange >= 0 ? '+' : ''}{formatCurrency(stockData.priceChange)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                    <div>
-                      <div className="font-medium text-sm text-gray-900">Market Cap</div>
-                      <div className="text-xs text-gray-600">Total Market Value</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-[#000721]">{formatCurrency(stockData.marketCap)}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                    <div>
-                      <div className="font-medium text-sm text-gray-900">Trading Volume</div>
-                      <div className="text-xs text-gray-600">Daily Volume</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-[#000721]">{formatNumber(stockData.volume)}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                    <div>
-                      <div className="font-medium text-sm text-gray-900">P/E Ratio</div>
-                      <div className="text-xs text-gray-600">Price to Earnings</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-[#000721]">{stockData.peRatio.toFixed(2)}x</div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-gray-600">Loading stock data...</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Financial Performance Charts */}
@@ -316,7 +221,7 @@ export default function OverviewSection() {
             <BarChart3 className="w-5 h-5" />
             <span>Performance Analytics</span>
           </CardTitle>
-          <CardDescription className="text-gray-600">Visual analysis of financial metrics and stock performance</CardDescription>
+          <CardDescription className="text-gray-600">Visual analysis of financial metrics</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -387,32 +292,29 @@ export default function OverviewSection() {
               </div>
             </div>
 
-            {/* Stock Performance vs Financial Metrics */}
+            {/* Financial Performance Chart */}
             <div className="h-64">
-              <h4 className="text-sm font-medium text-gray-700 mb-4">Market vs Financial Performance</h4>
+              <h4 className="text-sm font-medium text-gray-700 mb-4">Financial Performance</h4>
               <Bar
                 data={{
-                  labels: ['Revenue', 'Net Income', 'Stock Price', 'Market Cap'],
+                  labels: ['Revenue', 'Net Income', 'Operating Income'],
                   datasets: [
                     {
-                      label: 'Performance Metrics (normalized)',
+                      label: 'Financial Metrics (thousands)',
                       data: [
-                        financialData.revenue / 1000, // Normalize revenue
-                        financialData.netIncome / 100, // Normalize net income
-                        stockData ? stockData.currentPrice : 0,
-                        stockData ? stockData.marketCap / 1000000 : 0 // Normalize market cap
+                        financialData.revenue, // Revenue in thousands
+                        financialData.netIncome, // Net income in thousands
+                        financialData.operatingIncome // Operating income in thousands
                       ],
                       backgroundColor: [
                         'rgba(0, 7, 33, 0.8)',
                         'rgba(34, 197, 94, 0.8)',
-                        'rgba(59, 130, 246, 0.8)',
-                        'rgba(147, 51, 234, 0.8)'
+                        'rgba(59, 130, 246, 0.8)'
                       ],
                       borderColor: [
                         '#000721',
                         '#22c55e',
-                        '#3b82f6',
-                        '#9333ea'
+                        '#3b82f6'
                       ],
                       borderWidth: 1,
                       borderRadius: 6,
@@ -431,18 +333,7 @@ export default function OverviewSection() {
                       callbacks: {
                         label: (context) => {
                           const label = context.label;
-                          switch(label) {
-                            case 'Revenue':
-                              return `Revenue: ${formatCurrency(financialData.revenue * 1000)}`;
-                            case 'Net Income':
-                              return `Net Income: ${formatCurrency(financialData.netIncome * 1000)}`;
-                            case 'Stock Price':
-                              return `Stock Price: ${formatCurrency(context.parsed.y)}`;
-                            case 'Market Cap':
-                              return `Market Cap: ${formatCurrency((context.parsed.y) * 1000000)}`;
-                            default:
-                              return `${label}: ${context.parsed.y}`;
-                          }
+                          return `${label}: ${formatCurrency(context.parsed.y * 1000)}`;
                         }
                       }
                     }
@@ -452,7 +343,10 @@ export default function OverviewSection() {
                       beginAtZero: true,
                       title: {
                         display: true,
-                        text: 'Normalized Values'
+                        text: 'Amount (Thousands USD)'
+                      },
+                      ticks: {
+                        callback: (value) => formatCurrency((value as number) * 1000)
                       }
                     },
                     x: {

@@ -470,11 +470,11 @@ export default function IncomeSection() {
                   {
                     label: 'Gross Margin (%)',
                     data: [
-                      (income2020?.processed?.grossMargin || 0) * 100,
-                      (income2021?.processed?.grossMargin || 0) * 100,
-                      (income2022?.processed?.grossMargin || 0) * 100,
-                      (income2023?.processed?.grossMargin || 0) * 100,
-                      (income2024?.processed?.grossMargin || 0) * 100
+(income2020?.processed?.grossMargin || 0),
+                      (income2021?.processed?.grossMargin || 0),
+                      (income2022?.processed?.grossMargin || 0),
+                      (income2023?.processed?.grossMargin || 0),
+                      (income2024?.processed?.grossMargin || 0)
                     ],
                     backgroundColor: 'rgba(0, 7, 33, 0.8)',
                     borderColor: '#000721',
@@ -485,11 +485,11 @@ export default function IncomeSection() {
                   {
                     label: 'Operating Margin (%)',
                     data: [
-                      (income2020?.processed?.operatingMargin || 0) * 100,
-                      (income2021?.processed?.operatingMargin || 0) * 100,
-                      (income2022?.processed?.operatingMargin || 0) * 100,
-                      (income2023?.processed?.operatingMargin || 0) * 100,
-                      (income2024?.processed?.operatingMargin || 0) * 100
+                      (income2020?.processed?.operatingMargin || 0),
+                      (income2021?.processed?.operatingMargin || 0),
+                      (income2022?.processed?.operatingMargin || 0),
+                      (income2023?.processed?.operatingMargin || 0),
+                      (income2024?.processed?.operatingMargin || 0)
                     ],
                     backgroundColor: 'rgba(59, 130, 246, 0.8)',
                     borderColor: '#3b82f6',
@@ -500,11 +500,11 @@ export default function IncomeSection() {
                   {
                     label: 'Net Margin (%)',
                     data: [
-                      (income2020?.processed?.netMargin || 0) * 100,
-                      (income2021?.processed?.netMargin || 0) * 100,
-                      (income2022?.processed?.netMargin || 0) * 100,
-                      (income2023?.processed?.netMargin || 0) * 100,
-                      (income2024?.processed?.netMargin || 0) * 100
+                      (income2020?.processed?.netMargin || 0),
+                      (income2021?.processed?.netMargin || 0),
+                      (income2022?.processed?.netMargin || 0),
+                      (income2023?.processed?.netMargin || 0),
+                      (income2024?.processed?.netMargin || 0)
                     ],
                     backgroundColor: 'rgba(34, 197, 94, 0.8)',
                     borderColor: '#22c55e',

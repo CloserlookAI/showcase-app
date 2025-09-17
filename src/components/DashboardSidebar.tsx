@@ -49,12 +49,6 @@ const sidebarItems: SidebarItem[] = [
     description: 'Assets, liabilities, and equity overview'
   },
   {
-    id: 'revenue',
-    label: 'Revenue Analytics',
-    icon: TrendingUp,
-    description: 'Revenue trends and analysis'
-  },
-  {
     id: 'reviews',
     label: 'Reviews & Ratings',
     icon: Star,

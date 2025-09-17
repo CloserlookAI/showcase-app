@@ -10,7 +10,6 @@ import {
   Building2,
   Package,
   CreditCard,
-  Users,
   Loader2,
   PieChart,
   Calculator,
@@ -92,7 +91,7 @@ export default function AssetsSection() {
           <div>
             <h1 className="text-2xl font-bold text-[#000721]">Balance Sheet</h1>
             <div className="flex items-center space-x-4">
-              <p className="text-gray-600">Assets, liabilities, and equity overview • Year {assetsData.year}</p>
+              <p className="text-gray-600">Assets and liabilities overview • Year {assetsData.year}</p>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
@@ -108,7 +107,7 @@ export default function AssetsSection() {
       </div>
 
       {/* Key Balance Sheet Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-700">Total Assets</CardTitle>
@@ -142,16 +141,6 @@ export default function AssetsSection() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-700">Shareholders' Equity</CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.shareholdersEquityM * 1000)}</div>
-            <p className="text-xs text-gray-600 mt-1">Owners' equity</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Assets Breakdown */}
@@ -264,10 +253,6 @@ export default function AssetsSection() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Shareholders' Equity</span>
-                <span className="font-semibold text-blue-600">{formatCurrency(processedData.shareholdersEquityM * 1000)}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Working Capital</span>
                 <span className="font-medium text-green-600">{formatCurrency(processedData.workingCapitalM * 1000)}</span>
               </div>
@@ -295,10 +280,10 @@ export default function AssetsSection() {
             <PieChart className="w-5 h-5" />
             <span>Balance Sheet Equation</span>
           </CardTitle>
-          <CardDescription className="text-gray-600">Assets = Liabilities + Equity verification</CardDescription>
+          <CardDescription className="text-gray-600">Assets and liabilities overview</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
             <div className="p-6 bg-blue-50 rounded-lg">
               <div className="text-sm text-blue-700 mb-2">Total Assets</div>
               <div className="text-2xl font-bold text-blue-600">{formatCurrency(processedData.totalAssetsM * 1000)}</div>
@@ -308,11 +293,6 @@ export default function AssetsSection() {
               <div className="text-sm text-red-700 mb-2">Total Liabilities</div>
               <div className="text-2xl font-bold text-red-600">{formatCurrency(processedData.totalLiabilitiesM * 1000)}</div>
               <div className="text-xs text-red-600 mt-1">What we owe</div>
-            </div>
-            <div className="p-6 bg-green-50 rounded-lg">
-              <div className="text-sm text-green-700 mb-2">Shareholders' Equity</div>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(processedData.shareholdersEquityM * 1000)}</div>
-              <div className="text-xs text-green-600 mt-1">Owners' stake</div>
             </div>
           </div>
           <div className="mt-4 text-center text-sm text-gray-600">
@@ -407,35 +387,32 @@ export default function AssetsSection() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 text-[#000721]">
               <BarChart3 className="w-5 h-5" />
-              <span>Capital Structure {selectedYear}</span>
+              <span>Liabilities Structure {selectedYear}</span>
             </CardTitle>
-            <CardDescription className="text-gray-600">Liabilities vs equity composition</CardDescription>
+            <CardDescription className="text-gray-600">Company liabilities breakdown</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               <Bar
                 data={{
-                  labels: ['Current Liabilities', 'Long-term Debt', 'Total Liabilities', 'Shareholders Equity'],
+                  labels: ['Current Liabilities', 'Long-term Debt', 'Total Liabilities'],
                   datasets: [
                     {
                       label: 'Amount (thousands)',
                       data: [
                         processedData.currentLiabilities,
                         processedData.longTermDebt,
-                        processedData.totalLiabilities,
-                        processedData.totalShareholdersEquity
+                        processedData.totalLiabilities
                       ],
                       backgroundColor: [
                         'rgba(239, 68, 68, 0.8)',
                         'rgba(245, 158, 11, 0.8)',
-                        'rgba(107, 114, 128, 0.8)',
-                        'rgba(34, 197, 94, 0.8)'
+                        'rgba(107, 114, 128, 0.8)'
                       ],
                       borderColor: [
                         '#dc2626',
                         '#d97706',
-                        '#6b7280',
-                        '#16a34a'
+                        '#6b7280'
                       ],
                       borderWidth: 1,
                       borderRadius: 6,
@@ -496,9 +473,9 @@ export default function AssetsSection() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-[#000721]">
             <TrendingUp className="w-5 h-5" />
-            <span>Balance Sheet Growth Trends</span>
+            <span>Assets & Liabilities Growth Trends</span>
           </CardTitle>
-          <CardDescription className="text-gray-600">5-year progression of assets, liabilities, and equity</CardDescription>
+          <CardDescription className="text-gray-600">5-year progression of assets and liabilities</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-80">
@@ -542,24 +519,6 @@ export default function AssetsSection() {
                     pointBorderWidth: 2,
                     pointRadius: 6,
                   },
-                  {
-                    label: 'Shareholders Equity',
-                    data: [
-                      assets2020?.processed?.totalShareholdersEquity || 0,
-                      assets2021?.processed?.totalShareholdersEquity || 0,
-                      assets2022?.processed?.totalShareholdersEquity || 0,
-                      assets2023?.processed?.totalShareholdersEquity || 0,
-                      assets2024?.processed?.totalShareholdersEquity || 0
-                    ],
-                    borderColor: '#22c55e',
-                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                    fill: false,
-                    tension: 0.4,
-                    pointBackgroundColor: '#22c55e',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                  }
                 ]
               }}
               options={{
