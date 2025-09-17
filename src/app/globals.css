@@ -1,28 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --foreground: #171717;
+  --background: 0 0% 100%;
+  --foreground: 228 100% 6.5%; /* #000721 equivalent */
+  --card: 0 0% 100%;
+  --card-foreground: 228 100% 6.5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 228 100% 6.5%;
+  --primary: 228 100% 6.5%; /* #000721 */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 228 100% 6.5%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 228 100% 8%; /* Slightly lighter than primary */
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 228 100% 6.5%;
+  --radius: 0.75rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 84% 4.9%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 76.3% 94.1%;
 }
 
 body {
-  background: linear-gradient(135deg, #00224B 0%, #ffffff 100%);
-  background-attachment: fixed;
-  color: var(--foreground);
+  background: #f8fafc;
+  color: hsl(var(--foreground));
   font-family: Arial, Helvetica, sans-serif;
   min-height: 100vh;
 }

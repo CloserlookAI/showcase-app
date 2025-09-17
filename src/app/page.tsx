@@ -1,5 +1,5 @@
-import ChatInterface from '@/components/ChatInterface';
+import LifewayDashboard from '@/components/LifewayDashboard';
 
 export default function Page() {
-  return <ChatInterface />;
+  return <LifewayDashboard />;
 }

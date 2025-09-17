@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ChatWidgetProvider from "@/components/ChatWidgetProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agent Chat - Showcase App",
-  description: "Chat interface for Remote Agent AI",
+  title: "Lifeway Foods - Financial Dashboard",
+  description: "Comprehensive financial analytics and business intelligence dashboard for Lifeway Foods Inc. (LWAY)",
 };
 
 export default function RootLayout({
@@ -36,7 +37,9 @@ export default function RootLayout({
             `,
           }}
         />
-        {children}
+        <ChatWidgetProvider>
+          {children}
+        </ChatWidgetProvider>
       </body>
     </html>
   );
