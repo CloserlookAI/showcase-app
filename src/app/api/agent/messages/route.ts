@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         input: {
           text: content,
         },
-        background: true,
+        background: false,
       }),
     });
 
