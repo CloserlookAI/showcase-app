@@ -8,17 +8,8 @@ import IncomeSection from './dashboard/IncomeSection';
 import AssetsSection from './dashboard/AssetsSection';
 import ReviewsSection from './dashboard/ReviewsSection';
 import NewsSection from './dashboard/NewsSection';
-
-// Placeholder components for other sections
-
-function MarketSection() {
-  return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Market Research</h2>
-      <p className="text-gray-600">Market research content coming soon...</p>
-    </div>
-  );
-}
+import MarketResearchSection from './dashboard/MarketResearchSection';
+import CompetitorsSection from './dashboard/CompetitorsSection';
 
 export default function LifewayDashboard() {
   const [activeSection, setActiveSection] = useState('overview');
@@ -39,7 +30,9 @@ export default function LifewayDashboard() {
       case 'news':
         return <NewsSection />;
       case 'market':
-        return <MarketSection />;
+        return <MarketResearchSection />;
+      case 'competitors':
+        return <CompetitorsSection />;
       default:
         return <OverviewSection />;
     }

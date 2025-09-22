@@ -20,8 +20,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { content } = await request.json();
-
+    const { content: userMessage } = await request.json();
     // Step 1: Send user message
     const userMessageResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/responses`, {
       method: 'POST',
@@ -31,11 +30,17 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         input: {
-          text: content,
+          content: [
+            {
+              type: "text",
+              content: userMessage
+            }
+          ]
         },
-        background: false,
+        background: true,
       }),
     });
+
 
     if (!userMessageResponse.ok) {
       let errorMessage = `HTTP ${userMessageResponse.status}: ${userMessageResponse.statusText}`;
@@ -55,34 +60,32 @@ export async function POST(request: NextRequest) {
 
     const initialResponse = await userMessageResponse.json();
 
-    // Step 2: Poll the specific response until it's completed
+    // If background=false timed out (504), fall back to polling
     let finalResponse = initialResponse;
-    const maxAttempts = 60; // 2 minutes max
-    const pollDelay = 2000; // 2 seconds between polls
 
-    // Poll until the response is completed
-    for (let attempt = 0; attempt < maxAttempts && finalResponse.status !== 'completed'; attempt++) {
-      await new Promise(resolve => setTimeout(resolve, pollDelay));
+    // With background=true, we always need to poll
+    if (!['completed', 'failed'].includes(initialResponse.status)) {
+      const maxAttempts = 450; // 15 minutes (450 * 2 seconds = 900 seconds = 15 minutes)
+      const pollDelay = 2000; // 2 seconds between polls
 
-      // Poll the list and find our response by ID
-      const pollResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/responses`, {
-        headers: {
-          'Authorization': `Bearer ${BEARER_TOKEN}`,
-        },
-      });
 
-      if (pollResponse.ok) {
-        const allResponses = await pollResponse.json();
-        const ourResponse = allResponses.find((r: any) => r.id === initialResponse.id);
+      for (let attempt = 0; attempt < maxAttempts && !['completed', 'failed'].includes(finalResponse.status); attempt++) {
+        await new Promise(resolve => setTimeout(resolve, pollDelay));
 
-        if (ourResponse) {
-          finalResponse = ourResponse;
+        // Poll the specific response by ID
+        const pollResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/responses/${initialResponse.id}`, {
+          headers: {
+            'Authorization': `Bearer ${BEARER_TOKEN}`,
+          },
+        });
 
-          // If completed or failed, break out of the loop
-          if (finalResponse.status === 'completed' || finalResponse.status === 'failed') {
+        if (pollResponse.ok) {
+          const updatedResponse = await pollResponse.json();
+          finalResponse = updatedResponse;
+
+          if (['completed', 'failed'].includes(finalResponse.status)) {
             break;
           }
-        }
       }
     }
 
@@ -95,16 +98,31 @@ export async function POST(request: NextRequest) {
 
     if (finalResponse.status !== 'completed') {
       return NextResponse.json(
-        { error: 'Agent did not complete response within expected time' },
+        { error: 'Agent did not complete response within 15 minutes' },
         { status: 408 }
       );
     }
 
     // Transform the response to match the expected frontend format
+    // Extract content from output_content only (final clean results)
+    let responseContent = '';
+
+    // Only use output_content for final clean responses
+    if (finalResponse.output_content && finalResponse.output_content.length > 0) {
+      const markdownContent = finalResponse.output_content.find((item: any) => item.type === 'markdown');
+      const textContent = finalResponse.output_content.find((item: any) => item.type === 'text');
+
+      if (markdownContent) {
+        responseContent = markdownContent.content;
+      } else if (textContent) {
+        responseContent = textContent.content;
+      }
+    }
+
     const transformedResponse = {
       id: parseInt(finalResponse.id.replace(/-/g, '').substring(0, 10), 16), // Convert UUID to number-like ID
       role: 'agent' as const,
-      content: finalResponse.output?.text || '',
+      content: responseContent || 'No response generated.',
       metadata: finalResponse.metadata || {},
       created_at: finalResponse.created_at,
       agent_name: finalResponse.agent_name
@@ -167,8 +185,10 @@ export async function GET(request: NextRequest) {
     const transformedData = Array.isArray(data)
       ? data.map((response: any) => ({
           id: parseInt(response.id.replace(/-/g, '').substring(0, 10), 16), // Convert UUID to number-like ID
-          role: response.input ? 'agent' : 'system', // Determine role based on response structure
-          content: response.output?.text || response.input?.text || '',
+          role: response.input_content && response.input_content.length > 0 ? 'user' : 'agent', // Determine role based on response structure
+          content: response.output_content?.find((item: any) => item.type === 'text')?.content ||
+                   response.segments?.find((segment: any) => segment.type === 'final')?.text ||
+                   response.input_content?.find((item: any) => item.type === 'text')?.content || '',
           metadata: response.metadata || {},
           created_at: response.created_at,
           agent_name: response.agent_name

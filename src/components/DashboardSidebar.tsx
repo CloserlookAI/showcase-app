@@ -3,17 +3,15 @@
 import { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import {
-  BarChart3,
   Building2,
   DollarSign,
   Star,
   Newspaper,
-  TrendingUp,
-  Users,
   Globe,
   Home,
   Receipt,
-  Wallet
+  Wallet,
+  Target
 } from "lucide-react";
 
 interface SidebarItem {
@@ -64,7 +62,13 @@ const sidebarItems: SidebarItem[] = [
     id: 'market',
     label: 'Market Research',
     icon: Globe,
-    description: 'Industry trends and competitive analysis'
+    description: 'Industry trends and market analysis'
+  },
+  {
+    id: 'competitors',
+    label: 'Competitors',
+    icon: Target,
+    description: 'Competitive analysis and benchmarking'
   }
 ];
 

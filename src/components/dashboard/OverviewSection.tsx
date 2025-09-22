@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { useNewsData } from "@/hooks/useNewsData";
+import { useMarketResearch } from "@/hooks/useMarketResearch";
+import { useCompetitors } from "@/hooks/useCompetitors";
 import {
   TrendingUp,
   TrendingDown,
@@ -17,7 +19,9 @@ import {
   Star,
   Package,
   Globe,
-  Loader2
+  Loader2,
+  Target,
+  Activity
 } from "lucide-react";
 import {
   Chart as ChartJS,
@@ -30,6 +34,7 @@ import {
   Legend,
   ArcElement,
   BarElement,
+  RadialLinearScale,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
@@ -42,7 +47,8 @@ ChartJS.register(
   Tooltip,
   Legend,
   ArcElement,
-  BarElement
+  BarElement,
+  RadialLinearScale
 );
 
 // Mock news removed - now using real Yahoo Finance data
@@ -53,6 +59,8 @@ export default function OverviewSection() {
   const [selectedYear, setSelectedYear] = useState<number>(2024);
   const { data: financialData, loading, error } = useFinancialData(selectedYear);
   const { data: newsData, loading: newsLoading } = useNewsData('LWAY', 5);
+  const { data: marketData, loading: marketLoading } = useMarketResearch('LWAY');
+  const { data: competitorData, loading: competitorLoading } = useCompetitors('LWAY');
 
   const availableYears = [2024, 2023, 2022, 2021, 2020];
 
@@ -226,9 +234,9 @@ export default function OverviewSection() {
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Financial Ratios Doughnut Chart */}
-            <div className="h-64 flex flex-col items-center">
+            <div className="h-80 flex flex-col items-center p-4">
               <h4 className="text-sm font-medium text-gray-700 mb-4">Financial Health Breakdown</h4>
-              <div className="w-48 h-48">
+              <div className="w-64 h-64">
                 <Doughnut
                   data={{
                     labels: [
@@ -429,6 +437,104 @@ export default function OverviewSection() {
               ))
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Market Research Preview */}
+      <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 text-[#000721]">
+            <Activity className="w-5 h-5" />
+            <span>Market Research Insights</span>
+          </CardTitle>
+          <CardDescription className="text-gray-600">Key market analysis and technical outlook</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {marketLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-4 h-4 animate-spin text-[#000721] mr-2" />
+              <span className="text-sm text-gray-600">Loading market data...</span>
+            </div>
+          ) : marketData ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-lg font-bold text-[#000721]">{marketData.companyProfile.companyName}</div>
+                <div className="text-sm text-gray-600">{marketData.companyProfile.industry}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-[#000721]">{formatCurrency(marketData.companyProfile.marketCap)}</div>
+                <div className="text-sm text-gray-600">Market Cap</div>
+              </div>
+              <div className="text-center">
+                <Badge
+                  variant={marketData.technicalAnalysis.shortTerm.direction === 'Bullish' ? 'success' :
+                          marketData.technicalAnalysis.shortTerm.direction === 'Bearish' ? 'destructive' : 'secondary'}
+                >
+                  {marketData.technicalAnalysis.shortTerm.direction || 'Neutral'}
+                </Badge>
+                <div className="text-sm text-gray-600 mt-1">Short Term</div>
+              </div>
+              <div className="text-center">
+                <Badge
+                  variant={marketData.technicalAnalysis.valuation?.description?.includes('Overvalued') ? 'destructive' :
+                          marketData.technicalAnalysis.valuation?.description?.includes('Undervalued') ? 'success' : 'secondary'}
+                >
+                  {marketData.technicalAnalysis.valuation?.description || 'N/A'}
+                </Badge>
+                <div className="text-sm text-gray-600 mt-1">Valuation</div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-600">
+              Failed to load market research data
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Competitors Preview */}
+      <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 text-[#000721]">
+            <Target className="w-5 h-5" />
+            <span>Top Competitors</span>
+          </CardTitle>
+          <CardDescription className="text-gray-600">Direct competition analysis</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {competitorLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-4 h-4 animate-spin text-[#000721] mr-2" />
+              <span className="text-sm text-gray-600">Loading competitor data...</span>
+            </div>
+          ) : competitorData ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {competitorData.directCompetitors.slice(0, 3).map((competitor) => (
+                <div key={competitor.symbol} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-[#000721]">{competitor.symbol}</h4>
+                    {competitor.changePercent && (
+                      <div className={`flex items-center space-x-1 text-xs ${competitor.changePercent > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {competitor.changePercent > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                        <span>{competitor.changePercent.toFixed(1)}%</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600 mb-1">{competitor.companyName}</p>
+                  {competitor.price && (
+                    <div className="text-sm font-medium text-[#000721]">{formatCurrency(competitor.price)}</div>
+                  )}
+                  {competitor.marketCap && (
+                    <div className="text-xs text-gray-500">Cap: {formatCurrency(competitor.marketCap)}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-600">
+              Failed to load competitor data
+            </div>
+          )}
         </CardContent>
       </Card>
 

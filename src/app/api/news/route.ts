@@ -7,28 +7,36 @@ export async function GET(request: Request) {
     const symbol = searchParams.get('symbol') || 'LWAY';
     const limit = parseInt(searchParams.get('limit') || '10');
 
+    console.log(`Fetching news for symbol: ${symbol}, limit: ${limit}`);
+
+    // Suppress the survey notice
+    yahooFinance.suppressNotices(['yahooSurvey']);
+
     // Get news for the company
     const newsResults = await yahooFinance.search(symbol, {
       newsCount: limit,
+      quotesCount: 0, // We only want news
     });
 
+    console.log('Yahoo Finance response:', JSON.stringify(newsResults, null, 2));
+
     if (!newsResults.news || newsResults.news.length === 0) {
-      return NextResponse.json({ error: 'No news found' }, { status: 404 });
+      return NextResponse.json({ error: 'No news found for this symbol' }, { status: 404 });
     }
 
     // Process news data
     const processedNews = newsResults.news.map((article) => ({
-      id: article.uuid,
-      title: article.title,
+      id: article.uuid || Math.random().toString(),
+      title: article.title || 'No title available',
       summary: article.summary || '',
-      publisher: article.publisher,
+      publisher: article.publisher || 'Unknown',
       publishTime: article.providerPublishTime ? new Date(article.providerPublishTime * 1000).toISOString() : new Date().toISOString(),
-      link: article.link,
+      link: article.link || '#',
       thumbnail: article.thumbnail?.resolutions?.[0]?.url || null,
       // Calculate relative time
       timeAgo: article.providerPublishTime ? getTimeAgo(article.providerPublishTime * 1000) : 'Recently',
       // Simple sentiment analysis based on title keywords
-      sentiment: analyzeSentiment(article.title)
+      sentiment: analyzeSentiment(article.title || '')
     }));
 
     return NextResponse.json({
@@ -38,8 +46,19 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('Error fetching news data:', error);
+
+    // Log the full error details
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+
     return NextResponse.json(
-      { error: 'Failed to fetch news data' },
+      {
+        error: 'Failed to fetch news data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

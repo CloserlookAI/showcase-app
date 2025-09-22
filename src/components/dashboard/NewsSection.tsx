@@ -215,9 +215,9 @@ export default function NewsSection() {
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Sentiment Distribution Pie Chart */}
-            <div className="h-64 flex flex-col items-center">
+            <div className="h-80 flex flex-col items-center p-4">
               <h4 className="text-sm font-medium text-gray-700 mb-4">Sentiment Distribution</h4>
-              <div className="w-48 h-48">
+              <div className="w-64 h-64">
                 <Doughnut
                   data={{
                     labels: ['Positive', 'Neutral', 'Negative'],

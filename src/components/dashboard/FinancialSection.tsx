@@ -25,6 +25,7 @@ import {
   Tooltip,
   Legend,
   ArcElement,
+  RadialLinearScale,
 } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 
@@ -36,7 +37,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement
+  ArcElement,
+  RadialLinearScale
 );
 
 // All mock data removed - using only real-time data from MongoDB and Yahoo Finance
@@ -269,8 +271,8 @@ export default function FinancialSection() {
             <CardDescription className="text-gray-600">Key performance indicators visualization</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-center justify-center">
-              <div className="w-48 h-48">
+            <div className="h-80 flex items-center justify-center p-4">
+              <div className="w-64 h-64">
                 <Doughnut
                   data={{
                     labels: [
