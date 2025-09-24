@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lifeway Foods - Financial Dashboard",
-  description: "Comprehensive financial analytics and business intelligence dashboard for Lifeway Foods Inc. (LWAY)",
+  title: "Lifeway Foods - Business Intelligence Dashboard",
+  description: "Comprehensive business analytics and intelligence dashboard for Lifeway Foods",
 };
 
 export default function RootLayout({

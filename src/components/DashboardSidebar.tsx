@@ -114,7 +114,7 @@ export default function DashboardSidebar({
             {!isCollapsed && (
               <div className="flex-1">
                 <h2 className="text-sm font-semibold text-white">Lifeway Foods</h2>
-                <p className="text-xs text-gray-400">NASDAQ: LWAY</p>
+                <p className="text-xs text-gray-400">Business Intelligence</p>
               </div>
             )}
           </div>
@@ -189,7 +189,7 @@ export default function DashboardSidebar({
             <p className="whitespace-nowrap">
               Last updated: {mounted ? currentTime : '--:--:--'}
             </p>
-            <p className="mt-1 whitespace-nowrap">Market data delayed 15 min</p>
+            <p className="mt-1 whitespace-nowrap">Business Intelligence Dashboard</p>
           </div>
         </div>
       </div>

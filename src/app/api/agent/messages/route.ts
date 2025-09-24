@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
           if (['completed', 'failed'].includes(finalResponse.status)) {
             break;
           }
+        }
       }
     }
 

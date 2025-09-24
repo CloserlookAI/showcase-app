@@ -48,14 +48,14 @@ export default function ChatInterface() {
     };
   }, [isLoading]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const handleSubmit = async (messageText?: string) => {
+    const finalMessage = messageText || input;
+    if (!finalMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now() + Math.random(), // Ensure uniqueness
       role: 'user',
-      content: input.trim(),
+      content: finalMessage.trim(),
       created_at: new Date().toISOString(),
     };
 
@@ -66,7 +66,7 @@ export default function ChatInterface() {
 
     try {
       // Send message and wait for the final agent response (API handles all polling)
-      const response = await sendMessageToAgent(input.trim());
+      const response = await sendMessageToAgent(finalMessage.trim());
 
       const agentMessage: Message = {
         id: response.id,
@@ -82,6 +82,16 @@ export default function ChatInterface() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit();
+  };
+
+  const handleExampleClick = (exampleText: string) => {
+    setInput(exampleText);
+    handleSubmit(exampleText);
   };
 
   return (
@@ -120,39 +130,125 @@ export default function ChatInterface() {
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center px-4 relative z-0">
-              <h3 className="text-3xl font-bold text-white mb-4 bg-gradient-to-r from-white via-blue-100 to-blue-200 bg-clip-text text-transparent">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-2xl ring-4 ring-white/20 mb-6">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+
+              <h3 className="text-4xl font-bold text-white mb-3 bg-gradient-to-r from-white via-blue-100 to-blue-200 bg-clip-text text-transparent">
                 Welcome to Remote Agent
               </h3>
-              <p className="text-white/90 max-w-2xl text-lg leading-relaxed mb-8">
+              <p className="text-white/90 max-w-2xl text-lg leading-relaxed mb-10">
                 Your enterprise-grade AI assistant is ready to help with business intelligence, data analysis, automation, and strategic insights.
               </p>
+
+              {/* Example Prompts */}
+              <div className="max-w-4xl w-full mb-8">
+                <h4 className="text-xl font-semibold text-white/95 mb-6 text-left">Try asking me about:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button
+                    onClick={() => handleExampleClick("Give me an overview of Lifeway's performance over the last year")}
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl p-5 border border-white/30 hover:border-white/50 transition-all duration-300 cursor-pointer text-left group"
+                    disabled={isLoading}
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h5 className="text-white font-semibold mb-1 text-sm">Performance Overview</h5>
+                        <p className="text-white/80 text-sm leading-relaxed">"Give me an overview of Lifeway's performance over the last year"</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => handleExampleClick("How do Lifeway's margins compare to its competitors?")}
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl p-5 border border-white/30 hover:border-white/50 transition-all duration-300 cursor-pointer text-left group"
+                    disabled={isLoading}
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 0v10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h5 className="text-white font-semibold mb-1 text-sm">Competitive Analysis</h5>
+                        <p className="text-white/80 text-sm leading-relaxed">"How do Lifeway's margins compare to its competitors?"</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => handleExampleClick("Please summarize recent news coverage")}
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl p-5 border border-white/30 hover:border-white/50 transition-all duration-300 cursor-pointer text-left group"
+                    disabled={isLoading}
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h5 className="text-white font-semibold mb-1 text-sm">News Summary</h5>
+                        <p className="text-white/80 text-sm leading-relaxed">"Please summarize recent news coverage"</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => handleExampleClick("What trends in the dairy and health food sector should I be aware of?")}
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl p-5 border border-white/30 hover:border-white/50 transition-all duration-300 cursor-pointer text-left group"
+                    disabled={isLoading}
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h5 className="text-white font-semibold mb-1 text-sm">Industry Trends</h5>
+                        <p className="text-white/80 text-sm leading-relaxed">"What trends in the dairy and health food sector should I be aware of?"</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Feature cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl w-full">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center mb-4">
+                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-lg flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h4 className="text-white font-semibold mb-2">Data Analysis</h4>
-                  <p className="text-white/70 text-sm">Process and analyze complex datasets with advanced insights</p>
+                  <h4 className="text-white font-semibold mb-2">Market Intelligence</h4>
+                  <p className="text-white/60 text-sm">Real-time market data and competitive analysis</p>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center mb-4">
+                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                     </svg>
                   </div>
-                  <h4 className="text-white font-semibold mb-2">Automation</h4>
-                  <p className="text-white/70 text-sm">Streamline workflows and automate repetitive tasks</p>
+                  <h4 className="text-white font-semibold mb-2">Verified Insights</h4>
+                  <p className="text-white/60 text-sm">Accurate financial data and trend analysis</p>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center mb-4">
+                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <div className="w-12 h-12 bg-gradient-to-br from-rose-400 to-rose-600 rounded-lg flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   </div>
-                  <h4 className="text-white font-semibold mb-2">Insights</h4>
-                  <p className="text-white/70 text-sm">Generate strategic recommendations and actionable insights</p>
+                  <h4 className="text-white font-semibold mb-2">Strategic Guidance</h4>
+                  <p className="text-white/60 text-sm">Actionable recommendations for business growth</p>
                 </div>
               </div>
             </div>
@@ -267,7 +363,7 @@ export default function ChatInterface() {
         {/* Input */}
         <div className="flex-shrink-0 bg-white/15 backdrop-blur-md border-t border-white/30 px-6 py-6">
           <div className="max-w-4xl mx-auto">
-            <form onSubmit={handleSubmit} className="flex space-x-4">
+            <form onSubmit={handleFormSubmit} className="flex space-x-4">
               <div className="flex-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
