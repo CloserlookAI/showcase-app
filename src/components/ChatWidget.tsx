@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { Message } from '@/types/chat';
 import { sendMessageToAgent } from '@/lib/api';
 
@@ -102,12 +103,16 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={onToggle}
-          className="w-16 h-16 bg-gradient-to-br from-[#000721] to-[#1e293b] text-white rounded-full shadow-2xl hover:from-[#1e293b] hover:to-[#334155] focus:outline-none focus:ring-4 focus:ring-[#000721]/30 transition-all duration-300 flex items-center justify-center group animate-pulse"
+          className="w-16 h-16 bg-gradient-to-br from-[#000721] to-[#1e293b] text-white rounded-full shadow-2xl hover:from-[#1e293b] hover:to-[#334155] focus:outline-none focus:ring-4 focus:ring-[#000721]/30 transition-all duration-300 flex items-center justify-center group animate-pulse overflow-hidden"
           aria-label="Open chat"
         >
-          <svg className="w-8 h-8 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
+          <Image
+            src="https://avatars.githubusercontent.com/u/223376538?s=200&v=4"
+            alt="Chat"
+            width={40}
+            height={40}
+            className="object-cover rounded-full group-hover:scale-110 transition-transform"
+          />
         </button>
       </div>
     );
@@ -118,10 +123,14 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
       {/* Header */}
       <div className="bg-gradient-to-r from-[#000721] to-[#1e293b] text-white p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center overflow-hidden">
+            <Image
+              src="https://avatars.githubusercontent.com/u/223376538?s=200&v=4"
+              alt="Agent Logo"
+              width={32}
+              height={32}
+              className="object-cover rounded-full"
+            />
           </div>
           <div>
             <h3 className="font-semibold text-sm">Remote Agent</h3>
@@ -143,10 +152,14 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center py-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
+            <div className="w-12 h-12 bg-gradient-to-br from-[#000721] to-[#1e293b] rounded-full flex items-center justify-center mx-auto mb-3 overflow-hidden">
+              <Image
+                src="https://avatars.githubusercontent.com/u/223376538?s=200&v=4"
+                alt="Agent"
+                width={32}
+                height={32}
+                className="object-cover rounded-full"
+              />
             </div>
             <h4 className="text-gray-800 font-semibold text-sm mb-2">Welcome!</h4>
             <p className="text-gray-600 text-xs mb-4">Try asking me about:</p>
@@ -155,61 +168,61 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
             <div className="space-y-2">
               <button
                 onClick={() => handleExampleClick("Give me an overview of Lifeway's performance over the last year")}
-                className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-xs group"
+                className="w-full text-left p-2 bg-[#374151] hover:bg-[#4b5563] rounded-lg border border-[#4b5563] hover:border-[#6b7280] transition-all text-xs group"
                 disabled={isLoading}
               >
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center flex-shrink-0">
-                    <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-6 h-6 bg-[#000721] rounded flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <span className="text-gray-700 group-hover:text-gray-900">Performance Overview</span>
+                  <span className="text-white group-hover:text-gray-200">Performance Overview</span>
                 </div>
               </button>
 
               <button
                 onClick={() => handleExampleClick("How do Lifeway's margins compare to its competitors?")}
-                className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-xs group"
+                className="w-full text-left p-2 bg-[#374151] hover:bg-[#4b5563] rounded-lg border border-[#4b5563] hover:border-[#6b7280] transition-all text-xs group"
                 disabled={isLoading}
               >
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center flex-shrink-0">
-                    <svg className="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-6 h-6 bg-[#1e293b] rounded flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 0v10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2z" />
                     </svg>
                   </div>
-                  <span className="text-gray-700 group-hover:text-gray-900">Competitive Analysis</span>
+                  <span className="text-white group-hover:text-gray-200">Competitive Analysis</span>
                 </div>
               </button>
 
               <button
                 onClick={() => handleExampleClick("Please summarize recent news coverage")}
-                className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-xs group"
+                className="w-full text-left p-2 bg-[#374151] hover:bg-[#4b5563] rounded-lg border border-[#4b5563] hover:border-[#6b7280] transition-all text-xs group"
                 disabled={isLoading}
               >
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
-                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-6 h-6 bg-[#334155] rounded flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                     </svg>
                   </div>
-                  <span className="text-gray-700 group-hover:text-gray-900">News Summary</span>
+                  <span className="text-white group-hover:text-gray-200">News Summary</span>
                 </div>
               </button>
 
               <button
                 onClick={() => handleExampleClick("What trends in the dairy and health food sector should I be aware of?")}
-                className="w-full text-left p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-xs group"
+                className="w-full text-left p-2 bg-[#374151] hover:bg-[#4b5563] rounded-lg border border-[#4b5563] hover:border-[#6b7280] transition-all text-xs group"
                 disabled={isLoading}
               >
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-orange-100 rounded flex items-center justify-center flex-shrink-0">
-                    <svg className="w-3 h-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-6 h-6 bg-[#1e293b] rounded flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
-                  <span className="text-gray-700 group-hover:text-gray-900">Industry Trends</span>
+                  <span className="text-white group-hover:text-gray-200">Industry Trends</span>
                 </div>
               </button>
             </div>
@@ -219,8 +232,19 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
         {messages.map((message, index) => (
           <div
             key={`${message.id}-${index}`}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start items-start space-x-2'}`}
           >
+            {message.role === 'agent' && (
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden mt-1">
+                <Image
+                  src="https://avatars.githubusercontent.com/u/223376538?s=200&v=4"
+                  alt="Agent"
+                  width={32}
+                  height={32}
+                  className="object-cover rounded-full"
+                />
+              </div>
+            )}
             <div className={`max-w-[80%] px-3 py-2 ${
               message.role === 'user'
                 ? 'bg-[#000721] text-white rounded-2xl rounded-br-sm'
@@ -240,7 +264,16 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
         ))}
 
         {isLoading && (
-          <div className="flex justify-start">
+          <div className="flex justify-start items-start space-x-2">
+            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden mt-1">
+              <Image
+                src="https://avatars.githubusercontent.com/u/223376538?s=200&v=4"
+                alt="Agent"
+                width={32}
+                height={32}
+                className="object-cover rounded-full"
+              />
+            </div>
             <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-3 py-2 max-w-[80%]">
               <div className="flex items-center space-x-2">
                 <div className="flex space-x-1">

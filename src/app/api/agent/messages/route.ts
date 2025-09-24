@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // With background=true, we always need to poll
     if (!['completed', 'failed'].includes(initialResponse.status)) {
-      const maxAttempts = 450; // 15 minutes (450 * 2 seconds = 900 seconds = 15 minutes)
+      const maxAttempts = 1800; // 60 minutes (1800 * 2 seconds = 3600 seconds = 60 minutes)
       const pollDelay = 2000; // 2 seconds between polls
 
 
@@ -99,25 +99,48 @@ export async function POST(request: NextRequest) {
 
     if (finalResponse.status !== 'completed') {
       return NextResponse.json(
-        { error: 'Agent did not complete response within 15 minutes' },
+        { error: 'Agent did not complete response within 60 minutes' },
         { status: 408 }
       );
     }
 
     // Transform the response to match the expected frontend format
-    // Extract content from output_content only (final clean results)
+    // Extract clean final content from output_content (includes title + content and URLs)
     let responseContent = '';
 
-    // Only use output_content for final clean responses
     if (finalResponse.output_content && finalResponse.output_content.length > 0) {
-      const markdownContent = finalResponse.output_content.find((item: Record<string, unknown>) => item.type === 'markdown');
-      const textContent = finalResponse.output_content.find((item: Record<string, unknown>) => item.type === 'text');
+      const contentParts: string[] = [];
 
-      if (markdownContent) {
-        responseContent = markdownContent.content;
-      } else if (textContent) {
-        responseContent = textContent.content;
+      for (const item of finalResponse.output_content) {
+        if (item && typeof item === 'object') {
+          let itemContent = '';
+
+          // Add title if present
+          if ('title' in item && typeof item.title === 'string') {
+            itemContent += item.title + '\n';
+          }
+
+          // Add main content
+          if ('content' in item && typeof item.content === 'string') {
+            itemContent += item.content;
+          }
+
+          // Handle URL type specifically for published URLs
+          if (item.type === 'url' && 'url' in item && typeof item.url === 'string') {
+            if ('title' in item && typeof item.title === 'string') {
+              itemContent += `\n\n${item.title}: ${item.url}`;
+            } else {
+              itemContent += `\n\n🔗 ${item.url}`;
+            }
+          }
+
+          if (itemContent.trim()) {
+            contentParts.push(itemContent);
+          }
+        }
       }
+
+      responseContent = contentParts.join('\n\n');
     }
 
     const transformedResponse = {
