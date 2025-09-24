@@ -14,11 +14,11 @@ export interface MarketResearchData {
     marketCap: number;
   };
   technicalAnalysis: {
-    shortTerm: any;
-    mediumTerm: any;
-    longTerm: any;
-    valuation: any;
-    keyTechnicals: any;
+    shortTerm: Record<string, unknown>;
+    mediumTerm: Record<string, unknown>;
+    longTerm: Record<string, unknown>;
+    valuation: Record<string, unknown>;
+    keyTechnicals: Record<string, unknown>;
   };
   companyHealth: {
     innovativeness: number;
@@ -34,8 +34,8 @@ export interface MarketResearchData {
     sectorInsiderSentiments: number;
     sectorEarningsReports: number;
   };
-  significantDevelopments: any[];
-  analystReports: any[];
+  significantDevelopments: Record<string, unknown>[];
+  analystReports: Record<string, unknown>[];
   ownershipBreakdown: {
     insidersPercent: number;
     institutionsPercent: number;

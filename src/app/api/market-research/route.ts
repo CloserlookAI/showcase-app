@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const symbol = searchParams.get('symbol') || 'LWAY';
 
-    const results: any = {
+    const results: Record<string, unknown> = {
       symbol,
       timestamp: new Date().toISOString()
     };
@@ -23,9 +23,9 @@ export async function GET(request: Request) {
       companyProfile: {
         companyName: quote.shortName || quote.longName || symbol,
         businessSummary: marketSummary.summaryProfile?.longBusinessSummary || 'No description available',
-        sector: marketSummary.summaryProfile?.sector || quote.sector || 'Unknown',
-        industry: marketSummary.summaryProfile?.industry || quote.industry || 'Unknown',
-        employees: marketSummary.summaryProfile?.fullTimeEmployees || quote.fullTimeEmployees || 0,
+        sector: marketSummary.summaryProfile?.sector || (quote as unknown as { sector?: string }).sector || 'Unknown',
+        industry: marketSummary.summaryProfile?.industry || (quote as unknown as { industry?: string }).industry || 'Unknown',
+        employees: marketSummary.summaryProfile?.fullTimeEmployees || (quote as unknown as { fullTimeEmployees?: number }).fullTimeEmployees || 0,
         website: marketSummary.summaryProfile?.website || '',
         country: marketSummary.summaryProfile?.country || 'US',
         marketCap: quote.marketCap || 0
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
         earningsReports: insights.companySnapshot?.company?.earningsReports || 0
       },
       industryComparison: {
-        sectorInfo: insights.companySnapshot?.sectorInfo || quote.sector,
+        sectorInfo: insights.companySnapshot?.sectorInfo || (quote as unknown as { sector?: string }).sector,
         sectorInnovativeness: insights.companySnapshot?.sector?.innovativeness || 0.5,
         sectorHiring: insights.companySnapshot?.sector?.hiring || 0.5,
         sectorSustainability: insights.companySnapshot?.sector?.sustainability || 0.5,

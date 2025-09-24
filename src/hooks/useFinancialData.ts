@@ -68,7 +68,7 @@ export function useFinancialData(year?: number) {
 }
 
 export function useIncomeData(year?: number) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,7 +107,7 @@ export function useIncomeData(year?: number) {
 }
 
 export function useAssetsData(year?: number) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

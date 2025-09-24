@@ -11,13 +11,13 @@ export async function GET(request: Request) {
 
     if (year) {
       // Get specific year
-      assetsData = await getAssetsData(parseInt(year)) as AssetsData;
+      assetsData = await getAssetsData(parseInt(year)) as unknown as AssetsData;
       if (!assetsData) {
         return NextResponse.json({ error: `No assets data found for year ${year}` }, { status: 404 });
       }
     } else {
       // Get all years
-      assetsData = await getAssetsData() as AssetsData[];
+      assetsData = await getAssetsData() as unknown as AssetsData[];
       if (!assetsData || assetsData.length === 0) {
         return NextResponse.json({ error: 'No assets data found' }, { status: 404 });
       }

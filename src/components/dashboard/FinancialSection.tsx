@@ -3,15 +3,13 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatCurrency, formatPercent } from "@/lib/utils";
 import { useFinancialData, useIncomeData, useAssetsData } from "@/hooks/useFinancialData";
 import {
   TrendingUp,
-  TrendingDown,
   DollarSign,
   BarChart3,
   PieChart,
-  Calculator,
   Target,
   Loader2
 } from "lucide-react";
@@ -397,7 +395,7 @@ export default function FinancialSection() {
               <h4 className="font-semibold text-[#000721]">Equity</h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Shareholders' Equity</span>
+                  <span className="text-sm text-gray-600">Shareholders&apos; Equity</span>
                   <span className="font-medium text-[#000721]">{formatCurrency(financialData.shareholdersEquity * 1000)}</span>
                 </div>
                 <div className="flex justify-between">

@@ -160,7 +160,7 @@ export default function ChatInterface() {
                       </div>
                       <div>
                         <h5 className="text-white font-semibold mb-1 text-sm">Performance Overview</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">"Give me an overview of Lifeway's performance over the last year"</p>
+                        <p className="text-white/80 text-sm leading-relaxed">&quot;Give me an overview of Lifeway&apos;s performance over the last year&quot;</p>
                       </div>
                     </div>
                   </button>
@@ -178,7 +178,7 @@ export default function ChatInterface() {
                       </div>
                       <div>
                         <h5 className="text-white font-semibold mb-1 text-sm">Competitive Analysis</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">"How do Lifeway's margins compare to its competitors?"</p>
+                        <p className="text-white/80 text-sm leading-relaxed">&quot;How do Lifeway&apos;s margins compare to its competitors?&quot;</p>
                       </div>
                     </div>
                   </button>
@@ -196,7 +196,7 @@ export default function ChatInterface() {
                       </div>
                       <div>
                         <h5 className="text-white font-semibold mb-1 text-sm">News Summary</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">"Please summarize recent news coverage"</p>
+                        <p className="text-white/80 text-sm leading-relaxed">&quot;Please summarize recent news coverage&quot;</p>
                       </div>
                     </div>
                   </button>
@@ -214,7 +214,7 @@ export default function ChatInterface() {
                       </div>
                       <div>
                         <h5 className="text-white font-semibold mb-1 text-sm">Industry Trends</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">"What trends in the dairy and health food sector should I be aware of?"</p>
+                        <p className="text-white/80 text-sm leading-relaxed">&quot;What trends in the dairy and health food sector should I be aware of?&quot;</p>
                       </div>
                     </div>
                   </button>
@@ -299,7 +299,7 @@ export default function ChatInterface() {
                         minute: '2-digit'
                       })}
                     </p>
-                    {message.role === 'assistant' && (
+                    {message.role === 'agent' && (
                       <div className="flex items-center space-x-1">
                         <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                         <span className="text-xs text-green-600 font-medium">Delivered</span>

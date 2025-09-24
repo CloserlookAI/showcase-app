@@ -11,13 +11,13 @@ export async function GET(request: Request) {
 
     if (year) {
       // Get specific year
-      incomeData = await getIncomeData(parseInt(year)) as IncomeData;
+      incomeData = await getIncomeData(parseInt(year)) as unknown as IncomeData;
       if (!incomeData) {
         return NextResponse.json({ error: `No income data found for year ${year}` }, { status: 404 });
       }
     } else {
       // Get all years
-      incomeData = await getIncomeData() as IncomeData[];
+      incomeData = await getIncomeData() as unknown as IncomeData[];
       if (!incomeData || incomeData.length === 0) {
         return NextResponse.json({ error: 'No income data found' }, { status: 404 });
       }

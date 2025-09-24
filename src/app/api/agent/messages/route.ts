@@ -110,8 +110,8 @@ export async function POST(request: NextRequest) {
 
     // Only use output_content for final clean responses
     if (finalResponse.output_content && finalResponse.output_content.length > 0) {
-      const markdownContent = finalResponse.output_content.find((item: any) => item.type === 'markdown');
-      const textContent = finalResponse.output_content.find((item: any) => item.type === 'text');
+      const markdownContent = finalResponse.output_content.find((item: Record<string, unknown>) => item.type === 'markdown');
+      const textContent = finalResponse.output_content.find((item: Record<string, unknown>) => item.type === 'text');
 
       if (markdownContent) {
         responseContent = markdownContent.content;
@@ -184,12 +184,12 @@ export async function GET(request: NextRequest) {
 
     // Transform the responses to match the expected frontend format
     const transformedData = Array.isArray(data)
-      ? data.map((response: any) => ({
-          id: parseInt(response.id.replace(/-/g, '').substring(0, 10), 16), // Convert UUID to number-like ID
-          role: response.input_content && response.input_content.length > 0 ? 'user' : 'agent', // Determine role based on response structure
-          content: response.output_content?.find((item: any) => item.type === 'text')?.content ||
-                   response.segments?.find((segment: any) => segment.type === 'final')?.text ||
-                   response.input_content?.find((item: any) => item.type === 'text')?.content || '',
+      ? data.map((response: Record<string, unknown>) => ({
+          id: parseInt(String(response.id).replace(/-/g, '').substring(0, 10), 16), // Convert UUID to number-like ID
+          role: response.input_content && Array.isArray(response.input_content) && response.input_content.length > 0 ? 'user' : 'agent', // Determine role based on response structure
+          content: (response.output_content as Record<string, unknown>[] | undefined)?.find((item: Record<string, unknown>) => item.type === 'text')?.content ||
+                   (response.segments as Record<string, unknown>[] | undefined)?.find((segment: Record<string, unknown>) => segment.type === 'final')?.text ||
+                   (response.input_content as Record<string, unknown>[] | undefined)?.find((item: Record<string, unknown>) => item.type === 'text')?.content || '',
           metadata: response.metadata || {},
           created_at: response.created_at,
           agent_name: response.agent_name

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatCurrency, formatPercent } from "@/lib/utils";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { useNewsData } from "@/hooks/useNewsData";
 import { useMarketResearch } from "@/hooks/useMarketResearch";
@@ -12,11 +12,9 @@ import {
   TrendingUp,
   TrendingDown,
   DollarSign,
-  Users,
   ShoppingCart,
   BarChart3,
   Newspaper,
-  Star,
   Package,
   Globe,
   Loader2,
@@ -36,7 +34,7 @@ import {
   BarElement,
   RadialLinearScale,
 } from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { Bar, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -211,7 +209,7 @@ export default function OverviewSection() {
                     <span className="text-sm font-semibold text-[#000721] bg-blue-50 px-2 py-1 rounded">{formatCurrency(financialData.workingCapital * 1000)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700">Shareholders' Equity</span>
+                    <span className="text-sm text-gray-700">Shareholders&apos; Equity</span>
                     <span className="text-sm font-semibold text-[#000721] bg-blue-50 px-2 py-1 rounded">{formatCurrency(financialData.shareholdersEquity * 1000)}</span>
                   </div>
                 </div>
@@ -467,19 +465,19 @@ export default function OverviewSection() {
               </div>
               <div className="text-center">
                 <Badge
-                  variant={marketData.technicalAnalysis.shortTerm.direction === 'Bullish' ? 'success' :
-                          marketData.technicalAnalysis.shortTerm.direction === 'Bearish' ? 'destructive' : 'secondary'}
+                  variant={String(marketData.technicalAnalysis.shortTerm.direction) === 'Bullish' ? 'success' :
+                          String(marketData.technicalAnalysis.shortTerm.direction) === 'Bearish' ? 'destructive' : 'secondary'}
                 >
-                  {marketData.technicalAnalysis.shortTerm.direction || 'Neutral'}
+                  {String(marketData.technicalAnalysis.shortTerm.direction || 'Neutral')}
                 </Badge>
                 <div className="text-sm text-gray-600 mt-1">Short Term</div>
               </div>
               <div className="text-center">
                 <Badge
-                  variant={marketData.technicalAnalysis.valuation?.description?.includes('Overvalued') ? 'destructive' :
-                          marketData.technicalAnalysis.valuation?.description?.includes('Undervalued') ? 'success' : 'secondary'}
+                  variant={String(marketData.technicalAnalysis.valuation?.description || '').includes('Overvalued') ? 'destructive' :
+                          String(marketData.technicalAnalysis.valuation?.description || '').includes('Undervalued') ? 'success' : 'secondary'}
                 >
-                  {marketData.technicalAnalysis.valuation?.description || 'N/A'}
+                  {String(marketData.technicalAnalysis.valuation?.description || 'N/A')}
                 </Badge>
                 <div className="text-sm text-gray-600 mt-1">Valuation</div>
               </div>

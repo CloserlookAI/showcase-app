@@ -18,35 +18,37 @@ interface SearchParams {
   summary?: 0 | 1;
 }
 
-function buildParams(params: SearchParams): Record<string, any> {
-  const searchParams: Record<string, any> = {
+function buildParams(params: SearchParams): Record<string, string> {
+  const searchParams: Record<string, string> = {
     q: params.q,
-    count: params.count || 10,
-    offset: params.offset || 0,
+    count: String(params.count || 10),
+    offset: String(params.offset || 0),
     country: params.country || 'us',
     search_lang: params.search_lang || 'en',
     safesearch: SAFES_SEARCH_MAP[params.safesearch || 0],
-    spellcheck: params.spellcheck !== undefined ? params.spellcheck : 1,
+    spellcheck: String(params.spellcheck !== undefined ? params.spellcheck : 1),
   };
 
   if (params.freshness) {
     searchParams.freshness = params.freshness;
   }
   if (params.extra_snippets) {
-    searchParams.extra_snippets = 1;
+    searchParams.extra_snippets = '1';
   }
   if (params.summary) {
-    searchParams.summary = 1;
+    searchParams.summary = '1';
   }
 
   return searchParams;
 }
 
-function extractWebResults(respJson: any): any[] {
-  if (respJson.web && typeof respJson.web === 'object') {
-    return respJson.web.results || [];
+function extractWebResults(respJson: unknown): unknown[] {
+  const json = respJson as Record<string, unknown>;
+  if (json.web && typeof json.web === 'object') {
+    const web = json.web as Record<string, unknown>;
+    return (web.results as unknown[]) || [];
   }
-  return respJson.results || [];
+  return (json.results as unknown[]) || [];
 }
 
 export async function POST(request: Request) {
@@ -99,15 +101,18 @@ export async function POST(request: Request) {
     const processedResults = {
       query: data.query?.original || query,
       web: {
-        results: webResults.map((result: any) => ({
-          title: result.title || '',
-          url: result.url || '',
-          description: result.description || '',
-          age: result.age || null,
-          language: result.language || null,
-          family_friendly: result.family_friendly || true,
-          snippet: result.description || ''
-        }))
+        results: webResults.map((result) => {
+          const r = result as Record<string, unknown>;
+          return {
+          title: r.title || '',
+          url: r.url || '',
+          description: r.description || '',
+          age: r.age || null,
+          language: r.language || null,
+          family_friendly: r.family_friendly || true,
+          snippet: r.description || ''
+        };
+        })
       },
       news: data.news?.results || [],
       videos: data.videos?.results || [],
@@ -125,12 +130,10 @@ export async function POST(request: Request) {
       lastUpdated: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Error in Brave Search API:', error);
+  } catch {
     return NextResponse.json(
       {
-        error: 'Failed to search with Brave Search API',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: 'Failed to search with Brave Search API'
       },
       { status: 500 }
     );
@@ -171,7 +174,7 @@ export async function GET(request: Request) {
     });
 
     return POST(postRequest);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to process GET request' },
       { status: 500 }

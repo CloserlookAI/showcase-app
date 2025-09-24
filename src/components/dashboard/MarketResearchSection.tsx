@@ -3,17 +3,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useMarketResearch } from "@/hooks/useMarketResearch";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import {
-  TrendingUp,
-  TrendingDown,
   BarChart3,
   Target,
   Building,
   Globe,
   Users,
   Loader2,
-  AlertTriangle,
   FileText,
   Activity,
   PieChart
@@ -179,13 +176,13 @@ export default function MarketResearchSection() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Direction</span>
-                  <Badge variant={getTechnicalBadgeColor(marketData.technicalAnalysis.shortTerm.direction)}>
-                    {marketData.technicalAnalysis.shortTerm.direction || 'N/A'}
+                  <Badge variant={getTechnicalBadgeColor(String(marketData.technicalAnalysis.shortTerm.direction || ''))}>
+                    {String(marketData.technicalAnalysis.shortTerm.direction || 'N/A')}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Score</span>
-                  <span className="font-medium text-[#000721]">{marketData.technicalAnalysis.shortTerm.score || 'N/A'}</span>
+                  <span className="font-medium text-[#000721]">{String(marketData.technicalAnalysis.shortTerm.score || 'N/A')}</span>
                 </div>
               </div>
             </div>
@@ -195,13 +192,13 @@ export default function MarketResearchSection() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Direction</span>
-                  <Badge variant={getTechnicalBadgeColor(marketData.technicalAnalysis.mediumTerm.direction)}>
-                    {marketData.technicalAnalysis.mediumTerm.direction || 'N/A'}
+                  <Badge variant={getTechnicalBadgeColor(String(marketData.technicalAnalysis.mediumTerm.direction || ''))}>
+                    {String(marketData.technicalAnalysis.mediumTerm.direction || 'N/A')}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Score</span>
-                  <span className="font-medium text-[#000721]">{marketData.technicalAnalysis.mediumTerm.score || 'N/A'}</span>
+                  <span className="font-medium text-[#000721]">{String(marketData.technicalAnalysis.mediumTerm.score || 'N/A')}</span>
                 </div>
               </div>
             </div>
@@ -211,13 +208,13 @@ export default function MarketResearchSection() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Direction</span>
-                  <Badge variant={getTechnicalBadgeColor(marketData.technicalAnalysis.longTerm.direction)}>
-                    {marketData.technicalAnalysis.longTerm.direction || 'N/A'}
+                  <Badge variant={getTechnicalBadgeColor(String(marketData.technicalAnalysis.longTerm.direction || ''))}>
+                    {String(marketData.technicalAnalysis.longTerm.direction || 'N/A')}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Score</span>
-                  <span className="font-medium text-[#000721]">{marketData.technicalAnalysis.longTerm.score || 'N/A'}</span>
+                  <span className="font-medium text-[#000721]">{String(marketData.technicalAnalysis.longTerm.score || 'N/A')}</span>
                 </div>
               </div>
             </div>
@@ -228,8 +225,8 @@ export default function MarketResearchSection() {
               <h4 className="font-semibold text-[#000721] mb-3">Valuation Assessment</h4>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Current Valuation</span>
-                <Badge variant={getValueBadgeColor(marketData.technicalAnalysis.valuation.description)}>
-                  {marketData.technicalAnalysis.valuation.description} ({marketData.technicalAnalysis.valuation.discount})
+                <Badge variant={getValueBadgeColor(String(marketData.technicalAnalysis.valuation.description || ''))}>
+                  {String(marketData.technicalAnalysis.valuation.description || '')} ({String(marketData.technicalAnalysis.valuation.discount || '')})
                 </Badge>
               </div>
             </div>
@@ -385,20 +382,20 @@ export default function MarketResearchSection() {
                 <div key={index} className="p-4 border border-gray-200 rounded-lg">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-[#000721] mb-1">{report.title}</h4>
-                      <p className="text-sm text-gray-600 mb-2">{report.provider}</p>
-                      <p className="text-sm text-gray-700">{report.reportTitle}</p>
+                      <h4 className="font-medium text-[#000721] mb-1">{String(report.title || '')}</h4>
+                      <p className="text-sm text-gray-600 mb-2">{String(report.provider || '')}</p>
+                      <p className="text-sm text-gray-700">{String(report.reportTitle || '')}</p>
                     </div>
                     <div className="text-right">
                       <Badge
-                        variant={report.investmentRating === 'Bullish' ? 'success' :
-                                report.investmentRating === 'Bearish' ? 'destructive' : 'secondary'}
+                        variant={String(report.investmentRating) === 'Bullish' ? 'success' :
+                                String(report.investmentRating) === 'Bearish' ? 'destructive' : 'secondary'}
                       >
-                        {report.investmentRating}
+                        {String(report.investmentRating || '')}
                       </Badge>
-                      {report.targetPrice && (
+                      {Number(report.targetPrice) > 0 && (
                         <p className="text-sm text-gray-600 mt-1">
-                          Target: {formatCurrency(report.targetPrice)}
+                          Target: {formatCurrency(Number(report.targetPrice) || 0)}
                         </p>
                       )}
                     </div>

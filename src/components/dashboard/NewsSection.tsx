@@ -2,14 +2,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, formatNumber } from "@/lib/utils";
 import { useNewsData } from "@/hooks/useNewsData";
 import {
   Newspaper,
   ExternalLink,
   Loader2,
   TrendingUp,
-  Calendar,
   Globe,
   BarChart3,
   Clock
@@ -107,11 +105,11 @@ export default function NewsSection() {
                   >
                     <div className="flex items-start space-x-4">
                       {article.thumbnail && (
-                        <img
-                          src={article.thumbnail}
-                          alt={article.title}
-                          className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
-                        />
+                        <div
+                          className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center"
+                        >
+                          <Newspaper className="w-6 h-6 text-gray-400" />
+                        </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <h4 className={`font-medium mb-2 line-clamp-2 ${index === 0 ? 'text-lg text-[#000721]' : 'text-gray-900'}`}>
@@ -351,8 +349,8 @@ export default function NewsSection() {
                         font: {
                           size: 9
                         },
-                        callback: function(value, index) {
-                          const label = this.getLabelForValue(value);
+                        callback: function(value) {
+                          const label = this.getLabelForValue(Number(value));
                           return label.length > 12 ? label.substring(0, 12) + '...' : label;
                         }
                       }

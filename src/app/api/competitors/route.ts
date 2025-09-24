@@ -29,17 +29,17 @@ export async function GET(request: Request) {
             symbol: competitor.symbol,
             score: competitor.score,
             companyName: quote.shortName || quote.longName || competitor.symbol,
-            sector: quote.sector,
-            industry: quote.industry,
+            sector: (quote as unknown as { sector?: string }).sector || 'Unknown',
+            industry: (quote as unknown as { industry?: string }).industry || 'Unknown',
             marketCap: quote.marketCap,
             price: quote.regularMarketPrice,
             change: quote.regularMarketChange,
             changePercent: quote.regularMarketChangePercent,
             volume: quote.regularMarketVolume,
             peRatio: quote.trailingPE,
-            eps: quote.trailingEps,
-            dividend: quote.dividendRate,
-            employees: quote.fullTimeEmployees,
+            eps: (quote as unknown as { trailingEps?: number }).trailingEps || 0,
+            dividend: (quote as unknown as { dividendRate?: number }).dividendRate || 0,
+            employees: (quote as unknown as { fullTimeEmployees?: number }).fullTimeEmployees || 0,
             website: summary?.summaryProfile?.website || '',
             businessSummary: summary?.summaryProfile?.longBusinessSummary || '',
             revenue: summary?.financialData?.totalRevenue || 0,
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
     }
 
     // Also search for similar dairy/food companies
-    let industryPeers = [];
+    let industryPeers: unknown[] = [];
     try {
       const search = await yahooFinance.search('dairy food beverage', {
         quotesCount: 8,
@@ -75,16 +75,22 @@ export async function GET(request: Request) {
 
       if (search.quotes && search.quotes.length > 0) {
         industryPeers = search.quotes
-          .filter(q => q.symbol !== symbol && q.sector && q.industry)
+          .filter((q: unknown) => {
+            const quote = q as { symbol?: string; sector?: string; industry?: string };
+            return quote.symbol !== symbol && quote.sector && quote.industry;
+          })
           .slice(0, 5)
-          .map(q => ({
-            symbol: q.symbol,
-            companyName: q.shortName || q.longName,
-            sector: q.sector,
-            industry: q.industry,
-            marketCap: q.marketCap,
-            isPeer: true
-          }));
+          .map((q: unknown) => {
+            const quote = q as { symbol?: string; shortName?: string; longName?: string; sector?: string; industry?: string; marketCap?: number };
+            return {
+              symbol: quote.symbol || '',
+              companyName: quote.shortName || quote.longName || '',
+              sector: quote.sector || '',
+              industry: quote.industry || '',
+              marketCap: quote.marketCap || 0,
+              isPeer: true
+            };
+          });
       }
     } catch (error) {
       console.warn('Failed to fetch industry peers:', error);

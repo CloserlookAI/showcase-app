@@ -1,14 +1,44 @@
 'use client';
 
 import { useState } from "react";
+
+interface ProcessedAssetsData {
+  totalAssetsM?: number;
+  cashM?: number;
+  totalLiabilitiesM?: number;
+  accountsReceivable?: number;
+  inventory?: number;
+  currentAssets?: number;
+  propertyPlantEquipment?: number;
+  goodwill?: number;
+  intangibleAssets?: number;
+  totalAssets?: number;
+  accountsPayable?: number;
+  accruedExpenses?: number;
+  currentLiabilities?: number;
+  workingCapitalM?: number;
+  currentRatio?: number;
+  debtToEquity?: number;
+  bookValuePerShare?: number;
+  outstandingShares?: number;
+  cashAndEquivalents?: number;
+  propertyPlantEquipmentNet?: number;
+  longTermDebt?: number;
+  totalLiabilities?: number;
+  debtToEquityRatio?: number;
+  assetTurnoverRatio?: number;
+}
+
+interface AssetsDataType {
+  processed?: ProcessedAssetsData;
+  year?: number;
+}
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatCurrency, formatNumber } from "@/lib/utils";
 import { useAssetsData } from "@/hooks/useFinancialData";
 import {
-  DollarSign,
   Wallet,
   Building2,
-  Package,
   CreditCard,
   Loader2,
   PieChart,
@@ -81,7 +111,7 @@ export default function AssetsSection() {
     );
   }
 
-  const processedData = assetsData.processed;
+  const processedData = (assetsData as AssetsDataType)?.processed || {};
 
   return (
     <div className="space-y-6">
@@ -91,7 +121,7 @@ export default function AssetsSection() {
           <div>
             <h1 className="text-2xl font-bold text-[#000721]">Balance Sheet</h1>
             <div className="flex items-center space-x-4">
-              <p className="text-gray-600">Assets and liabilities overview • Year {assetsData.year}</p>
+              <p className="text-gray-600">Assets and liabilities overview • Year {(assetsData as AssetsDataType)?.year || 2023}</p>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
@@ -114,7 +144,7 @@ export default function AssetsSection() {
             <Building2 className="h-4 w-4 text-[#000721]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.totalAssetsM * 1000)}</div>
+            <div className="text-2xl font-bold text-[#000721]">{formatCurrency((processedData.totalAssetsM || 0) * 1000)}</div>
             <p className="text-xs text-gray-600 mt-1">Total company assets</p>
           </CardContent>
         </Card>
@@ -125,7 +155,7 @@ export default function AssetsSection() {
             <Wallet className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.cashM * 1000)}</div>
+            <div className="text-2xl font-bold text-[#000721]">{formatCurrency((processedData.cashM || 0) * 1000)}</div>
             <p className="text-xs text-gray-600 mt-1">Liquid assets available</p>
           </CardContent>
         </Card>
@@ -136,7 +166,7 @@ export default function AssetsSection() {
             <CreditCard className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.totalLiabilitiesM * 1000)}</div>
+            <div className="text-2xl font-bold text-[#000721]">{formatCurrency((processedData.totalLiabilitiesM || 0) * 1000)}</div>
             <p className="text-xs text-gray-600 mt-1">Total obligations</p>
           </CardContent>
         </Card>
@@ -158,19 +188,19 @@ export default function AssetsSection() {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Cash & Cash Equivalents</span>
-                <span className="font-semibold text-green-600">{formatCurrency(processedData.cashM * 1000)}</span>
+                <span className="font-semibold text-green-600">{formatCurrency((processedData.cashM || 0) * 1000)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Accounts Receivable</span>
-                <span className="font-medium text-[#000721]">{formatCurrency(processedData.accountsReceivable)}</span>
+                <span className="font-medium text-[#000721]">{formatCurrency(processedData.accountsReceivable || 0)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Inventory</span>
-                <span className="font-medium text-[#000721]">{formatCurrency(processedData.inventory)}</span>
+                <span className="font-medium text-[#000721]">{formatCurrency(processedData.inventory || 0)}</span>
               </div>
               <div className="flex justify-between items-center py-2 bg-blue-50 px-2 rounded">
                 <span className="text-sm font-semibold text-blue-800">Total Current Assets</span>
-                <span className="font-bold text-blue-600">{formatCurrency(processedData.currentAssets)}</span>
+                <span className="font-bold text-blue-600">{formatCurrency(processedData.currentAssets || 0)}</span>
               </div>
             </div>
           </CardContent>
@@ -189,19 +219,19 @@ export default function AssetsSection() {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Property, Plant & Equipment</span>
-                <span className="font-medium text-[#000721]">{formatCurrency(processedData.propertyPlantEquipment)}</span>
+                <span className="font-medium text-[#000721]">{formatCurrency(processedData.propertyPlantEquipment || 0)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Goodwill</span>
-                <span className="font-medium text-[#000721]">{formatCurrency(processedData.goodwill)}</span>
+                <span className="font-medium text-[#000721]">{formatCurrency(processedData.goodwill || 0)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Intangible Assets</span>
-                <span className="font-medium text-[#000721]">{formatCurrency(processedData.intangibleAssets)}</span>
+                <span className="font-medium text-[#000721]">{formatCurrency(processedData.intangibleAssets || 0)}</span>
               </div>
               <div className="flex justify-between items-center py-2 bg-green-50 px-2 rounded">
                 <span className="text-sm font-semibold text-green-800">Total Fixed Assets</span>
-                <span className="font-bold text-green-600">{formatCurrency(processedData.totalAssets - processedData.currentAssets)}</span>
+                <span className="font-bold text-green-600">{formatCurrency((processedData.totalAssets || 0) - (processedData.currentAssets || 0))}</span>
               </div>
             </div>
           </CardContent>
@@ -223,19 +253,19 @@ export default function AssetsSection() {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Accounts Payable</span>
-                <span className="font-medium text-red-600">{formatCurrency(processedData.accountsPayable)}</span>
+                <span className="font-medium text-red-600">{formatCurrency(processedData.accountsPayable || 0)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Accrued Expenses</span>
-                <span className="font-medium text-red-600">{formatCurrency(processedData.accruedExpenses)}</span>
+                <span className="font-medium text-red-600">{formatCurrency(processedData.accruedExpenses || 0)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Current Liabilities</span>
-                <span className="font-medium text-red-600">{formatCurrency(processedData.currentLiabilities)}</span>
+                <span className="font-medium text-red-600">{formatCurrency(processedData.currentLiabilities || 0)}</span>
               </div>
               <div className="flex justify-between items-center py-2 bg-red-50 px-2 rounded">
                 <span className="text-sm font-semibold text-red-800">Total Liabilities</span>
-                <span className="font-bold text-red-600">{formatCurrency(processedData.totalLiabilitiesM * 1000)}</span>
+                <span className="font-bold text-red-600">{formatCurrency((processedData.totalLiabilitiesM || 0) * 1000)}</span>
               </div>
             </div>
           </CardContent>
@@ -254,19 +284,19 @@ export default function AssetsSection() {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Working Capital</span>
-                <span className="font-medium text-green-600">{formatCurrency(processedData.workingCapitalM * 1000)}</span>
+                <span className="font-medium text-green-600">{formatCurrency((processedData.workingCapitalM || 0) * 1000)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Current Ratio</span>
-                <span className="font-medium text-[#000721]">{processedData.currentRatio.toFixed(2)}x</span>
+                <span className="font-medium text-[#000721]">{(processedData.currentRatio || 0).toFixed(2)}x</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Debt-to-Equity</span>
-                <span className="font-medium text-[#000721]">{processedData.debtToEquity.toFixed(2)}</span>
+                <span className="font-medium text-[#000721]">{(processedData.debtToEquity || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-2 bg-purple-50 px-2 rounded">
                 <span className="text-sm font-semibold text-purple-800">Book Value/Share</span>
-                <span className="font-bold text-purple-600">{formatCurrency(processedData.bookValuePerShare)}</span>
+                <span className="font-bold text-purple-600">{formatCurrency(processedData.bookValuePerShare || 0)}</span>
               </div>
             </div>
           </CardContent>
@@ -286,17 +316,17 @@ export default function AssetsSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
             <div className="p-6 bg-blue-50 rounded-lg">
               <div className="text-sm text-blue-700 mb-2">Total Assets</div>
-              <div className="text-2xl font-bold text-blue-600">{formatCurrency(processedData.totalAssetsM * 1000)}</div>
+              <div className="text-2xl font-bold text-blue-600">{formatCurrency((processedData.totalAssetsM || 0) * 1000)}</div>
               <div className="text-xs text-blue-600 mt-1">What we own</div>
             </div>
             <div className="p-6 bg-red-50 rounded-lg">
               <div className="text-sm text-red-700 mb-2">Total Liabilities</div>
-              <div className="text-2xl font-bold text-red-600">{formatCurrency(processedData.totalLiabilitiesM * 1000)}</div>
+              <div className="text-2xl font-bold text-red-600">{formatCurrency((processedData.totalLiabilitiesM || 0) * 1000)}</div>
               <div className="text-xs text-red-600 mt-1">What we owe</div>
             </div>
           </div>
           <div className="mt-4 text-center text-sm text-gray-600">
-            Outstanding Shares: {formatNumber(processedData.outstandingShares)} • Book Value per Share: {formatCurrency(processedData.bookValuePerShare)}
+            Outstanding Shares: {formatNumber(processedData.outstandingShares || 0)} • Book Value per Share: {formatCurrency(processedData.bookValuePerShare || 0)}
           </div>
         </CardContent>
       </Card>
@@ -327,11 +357,11 @@ export default function AssetsSection() {
                     datasets: [
                       {
                         data: [
-                          processedData.cashAndEquivalents,
-                          processedData.accountsReceivable,
-                          processedData.inventory,
-                          processedData.propertyPlantEquipmentNet,
-                          processedData.totalAssets - (processedData.cashAndEquivalents + processedData.accountsReceivable + processedData.inventory + processedData.propertyPlantEquipmentNet)
+                          processedData.cashAndEquivalents || 0,
+                          processedData.accountsReceivable || 0,
+                          processedData.inventory || 0,
+                          processedData.propertyPlantEquipmentNet || 0,
+                          (processedData.totalAssets || 0) - ((processedData.cashAndEquivalents || 0) + (processedData.accountsReceivable || 0) + (processedData.inventory || 0) + (processedData.propertyPlantEquipmentNet || 0))
                         ],
                         backgroundColor: [
                           '#000721',
@@ -400,9 +430,9 @@ export default function AssetsSection() {
                     {
                       label: 'Amount (thousands)',
                       data: [
-                        processedData.currentLiabilities,
-                        processedData.longTermDebt,
-                        processedData.totalLiabilities
+                        processedData.currentLiabilities || 0,
+                        processedData.longTermDebt || 0,
+                        processedData.totalLiabilities || 0
                       ],
                       backgroundColor: [
                         'rgba(239, 68, 68, 0.8)',
@@ -486,11 +516,11 @@ export default function AssetsSection() {
                   {
                     label: 'Total Assets',
                     data: [
-                      assets2020?.processed?.totalAssets || 0,
-                      assets2021?.processed?.totalAssets || 0,
-                      assets2022?.processed?.totalAssets || 0,
-                      assets2023?.processed?.totalAssets || 0,
-                      assets2024?.processed?.totalAssets || 0
+                      ((assets2020 as AssetsDataType)?.processed?.totalAssets || 0),
+                      ((assets2021 as AssetsDataType)?.processed?.totalAssets || 0),
+                      ((assets2022 as AssetsDataType)?.processed?.totalAssets || 0),
+                      ((assets2023 as AssetsDataType)?.processed?.totalAssets || 0),
+                      ((assets2024 as AssetsDataType)?.processed?.totalAssets || 0)
                     ],
                     borderColor: '#000721',
                     backgroundColor: 'rgba(0, 7, 33, 0.1)',
@@ -504,11 +534,11 @@ export default function AssetsSection() {
                   {
                     label: 'Total Liabilities',
                     data: [
-                      assets2020?.processed?.totalLiabilities || 0,
-                      assets2021?.processed?.totalLiabilities || 0,
-                      assets2022?.processed?.totalLiabilities || 0,
-                      assets2023?.processed?.totalLiabilities || 0,
-                      assets2024?.processed?.totalLiabilities || 0
+                      ((assets2020 as AssetsDataType)?.processed?.totalLiabilities || 0),
+                      ((assets2021 as AssetsDataType)?.processed?.totalLiabilities || 0),
+                      ((assets2022 as AssetsDataType)?.processed?.totalLiabilities || 0),
+                      ((assets2023 as AssetsDataType)?.processed?.totalLiabilities || 0),
+                      ((assets2024 as AssetsDataType)?.processed?.totalLiabilities || 0)
                     ],
                     borderColor: '#ef4444',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -585,11 +615,11 @@ export default function AssetsSection() {
                   {
                     label: 'Current Ratio',
                     data: [
-                      assets2020?.processed?.currentRatio || 0,
-                      assets2021?.processed?.currentRatio || 0,
-                      assets2022?.processed?.currentRatio || 0,
-                      assets2023?.processed?.currentRatio || 0,
-                      assets2024?.processed?.currentRatio || 0
+                      ((assets2020 as AssetsDataType)?.processed?.currentRatio || 0),
+                      ((assets2021 as AssetsDataType)?.processed?.currentRatio || 0),
+                      ((assets2022 as AssetsDataType)?.processed?.currentRatio || 0),
+                      ((assets2023 as AssetsDataType)?.processed?.currentRatio || 0),
+                      ((assets2024 as AssetsDataType)?.processed?.currentRatio || 0)
                     ],
                     backgroundColor: 'rgba(0, 7, 33, 0.8)',
                     borderColor: '#000721',
@@ -600,11 +630,11 @@ export default function AssetsSection() {
                   {
                     label: 'Debt-to-Equity Ratio',
                     data: [
-                      assets2020?.processed?.debtToEquityRatio || 0,
-                      assets2021?.processed?.debtToEquityRatio || 0,
-                      assets2022?.processed?.debtToEquityRatio || 0,
-                      assets2023?.processed?.debtToEquityRatio || 0,
-                      assets2024?.processed?.debtToEquityRatio || 0
+                      ((assets2020 as AssetsDataType)?.processed?.debtToEquityRatio || 0),
+                      ((assets2021 as AssetsDataType)?.processed?.debtToEquityRatio || 0),
+                      ((assets2022 as AssetsDataType)?.processed?.debtToEquityRatio || 0),
+                      ((assets2023 as AssetsDataType)?.processed?.debtToEquityRatio || 0),
+                      ((assets2024 as AssetsDataType)?.processed?.debtToEquityRatio || 0)
                     ],
                     backgroundColor: 'rgba(239, 68, 68, 0.8)',
                     borderColor: '#ef4444',
@@ -615,11 +645,11 @@ export default function AssetsSection() {
                   {
                     label: 'Asset Turnover Ratio',
                     data: [
-                      assets2020?.processed?.assetTurnoverRatio || 0,
-                      assets2021?.processed?.assetTurnoverRatio || 0,
-                      assets2022?.processed?.assetTurnoverRatio || 0,
-                      assets2023?.processed?.assetTurnoverRatio || 0,
-                      assets2024?.processed?.assetTurnoverRatio || 0
+                      ((assets2020 as AssetsDataType)?.processed?.assetTurnoverRatio || 0),
+                      ((assets2021 as AssetsDataType)?.processed?.assetTurnoverRatio || 0),
+                      ((assets2022 as AssetsDataType)?.processed?.assetTurnoverRatio || 0),
+                      ((assets2023 as AssetsDataType)?.processed?.assetTurnoverRatio || 0),
+                      ((assets2024 as AssetsDataType)?.processed?.assetTurnoverRatio || 0)
                     ],
                     backgroundColor: 'rgba(34, 197, 94, 0.8)',
                     borderColor: '#22c55e',

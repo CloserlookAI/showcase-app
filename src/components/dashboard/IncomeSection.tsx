@@ -1,16 +1,27 @@
 'use client';
 
 import { useState } from "react";
+
+interface IncomeDataType {
+  processed?: {
+    revenueM?: number;
+    netIncomeM?: number;
+    operatingIncomeM?: number;
+    grossMargin?: number;
+    operatingMargin?: number;
+    netMargin?: number;
+    [key: string]: unknown;
+  };
+  year?: number;
+}
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatCurrency, formatPercent } from "@/lib/utils";
 import { useIncomeData } from "@/hooks/useFinancialData";
 import {
   TrendingUp,
-  TrendingDown,
   DollarSign,
   Receipt,
   Loader2,
-  TrendingDown as Loss,
   BarChart3,
   PieChart
 } from "lucide-react";
@@ -79,7 +90,29 @@ export default function IncomeSection() {
     );
   }
 
-  const processedData = incomeData.processed;
+  const processedData = (incomeData as { processed?: {
+    revenueM?: number;
+    netIncomeM?: number;
+    operatingIncomeM?: number;
+    grossMargin?: number;
+    operatingMargin?: number;
+    netMargin?: number;
+    costOfGoodsM?: number;
+    operatingExpensesM?: number;
+    researchDevelopmentM?: number;
+    sellingAdminM?: number;
+    interestExpenseM?: number;
+    taxExpenseM?: number;
+    grossProfit?: number;
+    costOfGoodsSold?: number;
+    totalCostOfGoodsSold?: number;
+    sellingExpenses?: number;
+    adminExpenses?: number;
+    totalOperatingExpenses?: number;
+    incomeBeforeTaxes?: number;
+    provisionForTaxes?: number;
+    [key: string]: unknown;
+  } })?.processed || {} as Record<string, number>;
 
   return (
     <div className="space-y-6">
@@ -89,7 +122,7 @@ export default function IncomeSection() {
           <div>
             <h1 className="text-2xl font-bold text-[#000721]">Income Statement</h1>
             <div className="flex items-center space-x-4">
-              <p className="text-gray-600">Revenue, expenses, and profit analysis • Year {incomeData.year}</p>
+              <p className="text-gray-600">Revenue, expenses, and profit analysis • Year {(incomeData as { year?: number })?.year || 2023}</p>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
@@ -112,8 +145,8 @@ export default function IncomeSection() {
             <DollarSign className="h-4 w-4 text-[#000721]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.revenueM * 1000)}</div>
-            <p className="text-xs text-gray-600 mt-1">Net sales for {incomeData.year}</p>
+            <div className="text-2xl font-bold text-[#000721]">{formatCurrency((processedData.revenueM || 0) * 1000)}</div>
+            <p className="text-xs text-gray-600 mt-1">Net sales for {(incomeData as { year?: number })?.year || 2023}</p>
           </CardContent>
         </Card>
 
@@ -123,9 +156,9 @@ export default function IncomeSection() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.grossProfit)}</div>
+            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.grossProfit || 0)}</div>
             <div className="flex items-center space-x-1 text-xs mt-1">
-              <span className="text-green-600">Margin: {formatPercent(processedData.grossMargin)}</span>
+              <span className="text-green-600">Margin: {formatPercent(processedData.grossMargin || 0)}</span>
             </div>
           </CardContent>
         </Card>
@@ -136,9 +169,9 @@ export default function IncomeSection() {
             <Receipt className="h-4 w-4 text-[#000721]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.operatingIncomeM * 1000)}</div>
+            <div className="text-2xl font-bold text-[#000721]">{formatCurrency((processedData.operatingIncomeM || 0) * 1000)}</div>
             <div className="flex items-center space-x-1 text-xs mt-1">
-              <span className="text-gray-600">Margin: {formatPercent(processedData.operatingMargin)}</span>
+              <span className="text-gray-600">Margin: {formatPercent(processedData.operatingMargin || 0)}</span>
             </div>
           </CardContent>
         </Card>
@@ -149,9 +182,9 @@ export default function IncomeSection() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#000721]">{formatCurrency(processedData.netIncomeM * 1000)}</div>
+            <div className="text-2xl font-bold text-[#000721]">{formatCurrency((processedData.netIncomeM || 0) * 1000)}</div>
             <div className="flex items-center space-x-1 text-xs mt-1">
-              <span className="text-green-600">Margin: {formatPercent(processedData.netMargin)}</span>
+              <span className="text-green-600">Margin: {formatPercent(processedData.netMargin || 0)}</span>
             </div>
           </CardContent>
         </Card>
@@ -172,19 +205,19 @@ export default function IncomeSection() {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm font-medium text-gray-700">Net Sales</span>
-                <span className="font-semibold text-[#000721]">{formatCurrency(processedData.revenueM * 1000)}</span>
+                <span className="font-semibold text-[#000721]">{formatCurrency((processedData.revenueM || 0) * 1000)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Cost of Goods Sold</span>
-                <span className="font-medium text-red-600">({formatCurrency(processedData.costOfGoodsSold)})</span>
+                <span className="font-medium text-red-600">({formatCurrency(processedData.costOfGoodsSold || 0)})</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Total Cost of Goods Sold</span>
-                <span className="font-medium text-red-600">({formatCurrency(processedData.totalCostOfGoodsSold)})</span>
+                <span className="font-medium text-red-600">({formatCurrency(processedData.totalCostOfGoodsSold || 0)})</span>
               </div>
               <div className="flex justify-between items-center py-2 bg-green-50 px-2 rounded">
                 <span className="text-sm font-semibold text-green-800">Gross Profit</span>
-                <span className="font-bold text-green-600">{formatCurrency(processedData.grossProfit)}</span>
+                <span className="font-bold text-green-600">{formatCurrency(processedData.grossProfit || 0)}</span>
               </div>
             </div>
           </CardContent>
@@ -203,19 +236,19 @@ export default function IncomeSection() {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Selling Expenses</span>
-                <span className="font-medium text-red-600">({formatCurrency(processedData.sellingExpenses)})</span>
+                <span className="font-medium text-red-600">({formatCurrency(processedData.sellingExpenses || 0)})</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">General & Admin</span>
-                <span className="font-medium text-red-600">({formatCurrency(processedData.adminExpenses)})</span>
+                <span className="font-medium text-red-600">({formatCurrency(processedData.adminExpenses || 0)})</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Total Operating Expenses</span>
-                <span className="font-medium text-red-600">({formatCurrency(processedData.totalOperatingExpenses)})</span>
+                <span className="font-medium text-red-600">({formatCurrency(processedData.totalOperatingExpenses || 0)})</span>
               </div>
               <div className="flex justify-between items-center py-2 bg-blue-50 px-2 rounded">
                 <span className="text-sm font-semibold text-blue-800">Operating Income</span>
-                <span className="font-bold text-blue-600">{formatCurrency(processedData.operatingIncomeM * 1000)}</span>
+                <span className="font-bold text-blue-600">{formatCurrency((processedData.operatingIncomeM || 0) * 1000)}</span>
               </div>
             </div>
           </CardContent>
@@ -235,19 +268,19 @@ export default function IncomeSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <div className="text-sm text-gray-600 mb-1">Income Before Taxes</div>
-              <div className="text-lg font-bold text-[#000721]">{formatCurrency(processedData.incomeBeforeTaxes)}</div>
+              <div className="text-lg font-bold text-[#000721]">{formatCurrency(processedData.incomeBeforeTaxes || 0)}</div>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <div className="text-sm text-gray-600 mb-1">Tax Provision</div>
-              <div className="text-lg font-bold text-red-600">({formatCurrency(processedData.provisionForTaxes)})</div>
+              <div className="text-lg font-bold text-red-600">({formatCurrency(processedData.provisionForTaxes || 0)})</div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <div className="text-sm text-green-700 mb-1">Net Income</div>
-              <div className="text-xl font-bold text-green-600">{formatCurrency(processedData.netIncomeM * 1000)}</div>
+              <div className="text-xl font-bold text-green-600">{formatCurrency((processedData.netIncomeM || 0) * 1000)}</div>
             </div>
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="text-sm text-blue-700 mb-1">Net Margin</div>
-              <div className="text-xl font-bold text-blue-600">{formatPercent(processedData.netMargin)}</div>
+              <div className="text-xl font-bold text-blue-600">{formatPercent(processedData.netMargin || 0)}</div>
             </div>
           </div>
         </CardContent>
@@ -273,11 +306,11 @@ export default function IncomeSection() {
                     {
                       label: 'Revenue (millions)',
                       data: [
-                        income2020?.processed?.revenueM || 0,
-                        income2021?.processed?.revenueM || 0,
-                        income2022?.processed?.revenueM || 0,
-                        income2023?.processed?.revenueM || 0,
-                        income2024?.processed?.revenueM || 0
+                        ((income2020 as IncomeDataType)?.processed?.revenueM || 0),
+                        ((income2021 as IncomeDataType)?.processed?.revenueM || 0),
+                        ((income2022 as IncomeDataType)?.processed?.revenueM || 0),
+                        ((income2023 as IncomeDataType)?.processed?.revenueM || 0),
+                        ((income2024 as IncomeDataType)?.processed?.revenueM || 0)
                       ],
                       borderColor: '#000721',
                       backgroundColor: 'rgba(0, 7, 33, 0.1)',
@@ -291,11 +324,11 @@ export default function IncomeSection() {
                     {
                       label: 'Operating Income (millions)',
                       data: [
-                        income2020?.processed?.operatingIncomeM || 0,
-                        income2021?.processed?.operatingIncomeM || 0,
-                        income2022?.processed?.operatingIncomeM || 0,
-                        income2023?.processed?.operatingIncomeM || 0,
-                        income2024?.processed?.operatingIncomeM || 0
+                        ((income2020 as IncomeDataType)?.processed?.operatingIncomeM || 0),
+                        ((income2021 as IncomeDataType)?.processed?.operatingIncomeM || 0),
+                        ((income2022 as IncomeDataType)?.processed?.operatingIncomeM || 0),
+                        ((income2023 as IncomeDataType)?.processed?.operatingIncomeM || 0),
+                        ((income2024 as IncomeDataType)?.processed?.operatingIncomeM || 0)
                       ],
                       borderColor: '#3b82f6',
                       backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -309,11 +342,11 @@ export default function IncomeSection() {
                     {
                       label: 'Net Income (millions)',
                       data: [
-                        income2020?.processed?.netIncomeM || 0,
-                        income2021?.processed?.netIncomeM || 0,
-                        income2022?.processed?.netIncomeM || 0,
-                        income2023?.processed?.netIncomeM || 0,
-                        income2024?.processed?.netIncomeM || 0
+                        ((income2020 as IncomeDataType)?.processed?.netIncomeM || 0),
+                        ((income2021 as IncomeDataType)?.processed?.netIncomeM || 0),
+                        ((income2022 as IncomeDataType)?.processed?.netIncomeM || 0),
+                        ((income2023 as IncomeDataType)?.processed?.netIncomeM || 0),
+                        ((income2024 as IncomeDataType)?.processed?.netIncomeM || 0)
                       ],
                       borderColor: '#22c55e',
                       backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -396,11 +429,11 @@ export default function IncomeSection() {
                     datasets: [
                       {
                         data: [
-                          processedData.totalCostOfGoodsSold,
-                          processedData.sellingExpenses,
-                          processedData.adminExpenses,
-                          processedData.provisionForTaxes,
-                          processedData.netIncomeM * 1000
+                          processedData.totalCostOfGoodsSold || 0,
+                          processedData.sellingExpenses || 0,
+                          processedData.adminExpenses || 0,
+                          processedData.provisionForTaxes || 0,
+                          (processedData.netIncomeM || 0) * 1000
                         ],
                         backgroundColor: [
                           '#ef4444',
@@ -470,11 +503,11 @@ export default function IncomeSection() {
                   {
                     label: 'Gross Margin (%)',
                     data: [
-(income2020?.processed?.grossMargin || 0),
-                      (income2021?.processed?.grossMargin || 0),
-                      (income2022?.processed?.grossMargin || 0),
-                      (income2023?.processed?.grossMargin || 0),
-                      (income2024?.processed?.grossMargin || 0)
+(((income2020 as IncomeDataType)?.processed?.grossMargin || 0)),
+                      (((income2021 as IncomeDataType)?.processed?.grossMargin || 0)),
+                      (((income2022 as IncomeDataType)?.processed?.grossMargin || 0)),
+                      (((income2023 as IncomeDataType)?.processed?.grossMargin || 0)),
+                      (((income2024 as IncomeDataType)?.processed?.grossMargin || 0))
                     ],
                     backgroundColor: 'rgba(0, 7, 33, 0.8)',
                     borderColor: '#000721',
@@ -485,11 +518,11 @@ export default function IncomeSection() {
                   {
                     label: 'Operating Margin (%)',
                     data: [
-                      (income2020?.processed?.operatingMargin || 0),
-                      (income2021?.processed?.operatingMargin || 0),
-                      (income2022?.processed?.operatingMargin || 0),
-                      (income2023?.processed?.operatingMargin || 0),
-                      (income2024?.processed?.operatingMargin || 0)
+                      (((income2020 as IncomeDataType)?.processed?.operatingMargin || 0)),
+                      (((income2021 as IncomeDataType)?.processed?.operatingMargin || 0)),
+                      (((income2022 as IncomeDataType)?.processed?.operatingMargin || 0)),
+                      (((income2023 as IncomeDataType)?.processed?.operatingMargin || 0)),
+                      (((income2024 as IncomeDataType)?.processed?.operatingMargin || 0))
                     ],
                     backgroundColor: 'rgba(59, 130, 246, 0.8)',
                     borderColor: '#3b82f6',
@@ -500,11 +533,11 @@ export default function IncomeSection() {
                   {
                     label: 'Net Margin (%)',
                     data: [
-                      (income2020?.processed?.netMargin || 0),
-                      (income2021?.processed?.netMargin || 0),
-                      (income2022?.processed?.netMargin || 0),
-                      (income2023?.processed?.netMargin || 0),
-                      (income2024?.processed?.netMargin || 0)
+                      (((income2020 as IncomeDataType)?.processed?.netMargin || 0)),
+                      (((income2021 as IncomeDataType)?.processed?.netMargin || 0)),
+                      (((income2022 as IncomeDataType)?.processed?.netMargin || 0)),
+                      (((income2023 as IncomeDataType)?.processed?.netMargin || 0)),
+                      (((income2024 as IncomeDataType)?.processed?.netMargin || 0))
                     ],
                     backgroundColor: 'rgba(34, 197, 94, 0.8)',
                     borderColor: '#22c55e',

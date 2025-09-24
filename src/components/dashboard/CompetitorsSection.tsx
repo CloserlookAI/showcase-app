@@ -8,7 +8,6 @@ import {
   TrendingUp,
   TrendingDown,
   Building2,
-  Users,
   Globe,
   Loader2,
   BarChart3,
@@ -30,7 +29,7 @@ import {
   BarElement,
   RadialLinearScale,
 } from 'chart.js';
-import { Bar, Radar } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -112,7 +111,7 @@ export default function CompetitorsSection() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {competitorData.directCompetitors.map((competitor, index) => (
+            {competitorData.directCompetitors.map((competitor) => (
               <div key={competitor.symbol} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -335,7 +334,7 @@ export default function CompetitorsSection() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {competitorData.industryPeers.map((peer, index) => (
+              {competitorData.industryPeers.map((peer) => (
                 <div key={peer.symbol} className="p-3 border border-gray-200 rounded-lg">
                   <div className="flex items-start justify-between">
                     <div>

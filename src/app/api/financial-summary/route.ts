@@ -25,8 +25,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'No financial data found' }, { status: 404 });
     }
 
-    const incomeData = income as IncomeData;
-    const assetsData = assets as AssetsData;
+    const incomeData = income as unknown as IncomeData;
+    const assetsData = assets as unknown as AssetsData;
 
     // Calculate key metrics for dashboard (values are already in thousands)
     const revenue = parseThousands(incomeData["Net Sales (thousands)"]);

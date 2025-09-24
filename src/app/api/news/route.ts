@@ -28,13 +28,13 @@ export async function GET(request: Request) {
     const processedNews = newsResults.news.map((article) => ({
       id: article.uuid || Math.random().toString(),
       title: article.title || 'No title available',
-      summary: article.summary || '',
+      summary: (article as unknown as { summary?: string }).summary || '',
       publisher: article.publisher || 'Unknown',
-      publishTime: article.providerPublishTime ? new Date(article.providerPublishTime * 1000).toISOString() : new Date().toISOString(),
+      publishTime: article.providerPublishTime ? new Date(Number(article.providerPublishTime) * 1000).toISOString() : new Date().toISOString(),
       link: article.link || '#',
       thumbnail: article.thumbnail?.resolutions?.[0]?.url || null,
       // Calculate relative time
-      timeAgo: article.providerPublishTime ? getTimeAgo(article.providerPublishTime * 1000) : 'Recently',
+      timeAgo: article.providerPublishTime ? getTimeAgo(Number(article.providerPublishTime) * 1000) : 'Recently',
       // Simple sentiment analysis based on title keywords
       sentiment: analyzeSentiment(article.title || '')
     }));
