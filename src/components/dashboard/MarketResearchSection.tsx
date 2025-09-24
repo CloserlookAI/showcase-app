@@ -368,35 +368,6 @@ export default function MarketResearchSection() {
         </Card>
       </div>
 
-      {/* Significant Developments */}
-      {marketData.significantDevelopments && marketData.significantDevelopments.length > 0 && (
-        <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-[#000721]">
-              <AlertTriangle className="w-5 h-5" />
-              <span>Significant Developments</span>
-            </CardTitle>
-            <CardDescription className="text-gray-600">Recent key events and announcements</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {marketData.significantDevelopments.map((dev, index) => (
-                <div key={index} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-start space-x-3">
-                    <AlertTriangle className="w-4 h-4 text-blue-600 mt-0.5" />
-                    <div className="flex-1">
-                      <h4 className="font-medium text-blue-900">{dev.headline}</h4>
-                      <p className="text-sm text-blue-700 mt-1">
-                        {new Date(dev.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Analyst Reports */}
       {marketData.analystReports && marketData.analystReports.length > 0 && (

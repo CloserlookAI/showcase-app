@@ -11,7 +11,8 @@ import {
   TrendingUp,
   Calendar,
   Globe,
-  BarChart3
+  BarChart3,
+  Clock
 } from "lucide-react";
 import {
   Chart as ChartJS,
@@ -133,8 +134,14 @@ export default function NewsSection() {
                             <span>{article.publisher}</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <Calendar className="w-3 h-3" />
-                            <span>{article.timeAgo}</span>
+                            <Clock className="w-3 h-3" />
+                            <span>{new Date(article.publishTime).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}</span>
                           </div>
                           <Badge
                             variant={

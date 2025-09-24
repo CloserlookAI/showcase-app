@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import {
   Building2,
   DollarSign,
-  Star,
   Newspaper,
   Globe,
   Home,
@@ -45,12 +44,6 @@ const sidebarItems: SidebarItem[] = [
     label: 'Balance Sheet',
     icon: Wallet,
     description: 'Assets, liabilities, and equity overview'
-  },
-  {
-    id: 'reviews',
-    label: 'Reviews & Ratings',
-    icon: Star,
-    description: 'Customer and employee reviews'
   },
   {
     id: 'news',
