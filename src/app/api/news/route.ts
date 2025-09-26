@@ -7,8 +7,6 @@ export async function GET(request: Request) {
     const symbol = searchParams.get('symbol') || 'LWAY';
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    console.log(`Fetching news for symbol: ${symbol}, limit: ${limit}`);
-
     // Suppress the survey notice
     yahooFinance.suppressNotices(['yahooSurvey']);
 
@@ -17,8 +15,6 @@ export async function GET(request: Request) {
       newsCount: limit,
       quotesCount: 0, // We only want news
     });
-
-    console.log('Yahoo Finance response:', JSON.stringify(newsResults, null, 2));
 
     if (!newsResults.news || newsResults.news.length === 0) {
       return NextResponse.json({ error: 'No news found for this symbol' }, { status: 404 });
@@ -45,14 +41,7 @@ export async function GET(request: Request) {
       lastUpdated: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error fetching news data:', error);
-
-    // Log the full error details
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
+    console.error('Failed to fetch news data:', error instanceof Error ? error.message : error);
 
     return NextResponse.json(
       {

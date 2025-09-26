@@ -53,7 +53,7 @@ export default function ChatInterface() {
     if (!finalMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now() + Math.random(), // Ensure uniqueness
+      id: Date.now() + Math.random().toString(), // Ensure uniqueness
       role: 'user',
       content: finalMessage.trim(),
       created_at: new Date().toISOString(),

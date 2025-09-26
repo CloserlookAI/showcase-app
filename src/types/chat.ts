@@ -1,5 +1,5 @@
 export interface Message {
-  id: number;
+  id: string;
   role: 'user' | 'agent' | 'system';
   content: string;
   metadata?: Record<string, unknown>;
@@ -7,8 +7,14 @@ export interface Message {
   intermediateResponses?: AgentResponse[];
 }
 
+export interface ContentItem {
+  type: string;
+  content: string;
+}
+
+
 export interface AgentResponse {
-  id: number;
+  id: string;
   agent_name: string;
   role: 'user' | 'agent' | 'system';
   content: string;

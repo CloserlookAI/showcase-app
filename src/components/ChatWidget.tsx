@@ -58,7 +58,7 @@ export default function ChatWidget({ isOpen, onToggle }: ChatWidgetProps) {
     if (!finalMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now() + Math.random(),
+      id: Date.now() + Math.random().toString(),
       role: 'user',
       content: finalMessage.trim(),
       created_at: new Date().toISOString(),

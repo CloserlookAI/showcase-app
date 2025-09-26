@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import DashboardSidebar from './DashboardSidebar';
 import OverviewSection from './dashboard/OverviewSection';
+import AnalysisSection from './dashboard/AnalysisSection';
 import FinancialSection from './dashboard/FinancialSection';
 import IncomeSection from './dashboard/IncomeSection';
 import AssetsSection from './dashboard/AssetsSection';
@@ -18,6 +19,8 @@ export default function LifewayDashboard() {
     switch (activeSection) {
       case 'overview':
         return <OverviewSection />;
+      case 'analysis':
+        return <AnalysisSection />;
       case 'financial':
         return <FinancialSection />;
       case 'income':

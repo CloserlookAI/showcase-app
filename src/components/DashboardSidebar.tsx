@@ -10,7 +10,8 @@ import {
   Home,
   Receipt,
   Wallet,
-  Target
+  Target,
+  BarChart3
 } from "lucide-react";
 
 interface SidebarItem {
@@ -26,6 +27,12 @@ const sidebarItems: SidebarItem[] = [
     label: 'Dashboard Overview',
     icon: Home,
     description: 'Main dashboard with key metrics'
+  },
+  {
+    id: 'analysis',
+    label: 'Analysis',
+    icon: BarChart3,
+    description: 'AI-powered business analysis and insights'
   },
   {
     id: 'financial',
