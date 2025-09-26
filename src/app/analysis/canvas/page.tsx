@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import { Message } from '@/types/chat';
 import { sendMessageToSpecificAgent, getHtmlFromAgent, remixAgent, listAgents } from '@/lib/api';
-import { Send, Copy, Eye, Code } from 'lucide-react';
+import { Send, Copy, Download, Code } from 'lucide-react';
 
 function CanvasContent() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -186,8 +186,16 @@ function CanvasContent() {
     navigator.clipboard.writeText(text);
   };
 
-  const copyHtmlToClipboard = () => {
-    navigator.clipboard.writeText(htmlContent);
+  const downloadHtmlFile = () => {
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'lifeway_performance_report.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -328,15 +336,11 @@ function CanvasContent() {
               <h2 className="text-lg font-semibold text-[#000721]">HTML Report</h2>
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => setViewMode('preview')}
-                  className={`px-3 py-1 rounded-md text-sm transition-all ${
-                    viewMode === 'preview'
-                      ? 'bg-[#000721] text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  onClick={downloadHtmlFile}
+                  className="px-3 py-1 bg-[#000721] text-white hover:bg-[#1e293b] rounded-md text-sm transition-all"
                 >
-                  <Eye className="w-4 h-4 inline mr-1" />
-                  Preview
+                  <Download className="w-4 h-4 inline mr-1" />
+                  Download
                 </button>
                 <button
                   onClick={() => setViewMode('code')}
@@ -349,19 +353,21 @@ function CanvasContent() {
                   <Code className="w-4 h-4 inline mr-1" />
                   Code
                 </button>
-                <button
-                  onClick={copyHtmlToClipboard}
-                  className="px-3 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-md text-sm transition-all"
-                >
-                  <Copy className="w-4 h-4 inline mr-1" />
-                  Copy
-                </button>
               </div>
             </div>
           </div>
 
           <div className="flex-1 overflow-auto">
-            {viewMode === 'preview' ? (
+            {viewMode === 'code' ? (
+              <div className="p-6 h-full">
+                <textarea
+                  value={htmlContent}
+                  onChange={(e) => setHtmlContent(e.target.value)}
+                  className="w-full h-full p-4 bg-white border border-white/20 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#000721]/50 focus:border-[#000721]/50 shadow-inner"
+                  placeholder="HTML content will appear here..."
+                />
+              </div>
+            ) : (
               <div className="h-full p-6">
                 <div className="h-full bg-white rounded-lg border border-white/20 shadow-inner">
                   <iframe
@@ -370,15 +376,6 @@ function CanvasContent() {
                     title="Report Preview"
                   />
                 </div>
-              </div>
-            ) : (
-              <div className="p-6 h-full">
-                <textarea
-                  value={htmlContent}
-                  onChange={(e) => setHtmlContent(e.target.value)}
-                  className="w-full h-full p-4 bg-white border border-white/20 rounded-lg font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#000721]/50 focus:border-[#000721]/50 shadow-inner"
-                  placeholder="HTML content will appear here..."
-                />
               </div>
             )}
           </div>
