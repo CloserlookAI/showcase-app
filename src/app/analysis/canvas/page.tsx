@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import { Message } from '@/types/chat';
 import { sendMessageToSpecificAgent, getHtmlFromAgent, remixAgent, listAgents } from '@/lib/api';
-import { Send, Copy, Download, Code } from 'lucide-react';
+import { Send, Copy, Download, Code, Eye } from 'lucide-react';
 
 function CanvasContent() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -72,16 +72,19 @@ function CanvasContent() {
     try {
       // Get all agents with the base name prefix
       const { agents } = await listAgents(baseAgentName);
+      console.log(`Found ${agents.length} agents with prefix '${baseAgentName}'`);
 
       let highestNumber = 0;
+      const existingNumbers = new Set<number>();
 
-      // Find the highest number from existing agents
+      // Find the highest number from existing agents and track all numbers
       agents.forEach((agent: { name: string }) => {
         const agentName = agent.name;
         // Check if agent name matches pattern: lway-performance-overview-NUMBER
         const match = agentName.match(/^lway-performance-overview-(\d+)$/);
         if (match) {
           const number = parseInt(match[1], 10);
+          existingNumbers.add(number);
           if (number > highestNumber) {
             highestNumber = number;
           }
@@ -90,28 +93,61 @@ function CanvasContent() {
 
       // Return next sequential number
       const nextNumber = highestNumber + 1;
-      return `${baseAgentName}-${nextNumber}`;
+      const nextName = `${baseAgentName}-${nextNumber}`;
+
+      console.log(`Next available agent name: ${nextName} (highest existing: ${highestNumber})`);
+      console.log(`Existing numbers: [${Array.from(existingNumbers).sort((a, b) => a - b).join(', ')}]`);
+
+      return nextName;
 
     } catch (err) {
       console.error('Error finding next agent name:', err);
-      // If listing fails, default to -1
-      return `${baseAgentName}-1`;
+      // If listing fails, generate a random number to avoid conflicts
+      const randomNumber = Math.floor(Math.random() * 1000) + 1;
+      const fallbackName = `${baseAgentName}-${randomNumber}`;
+      console.log(`Using fallback agent name: ${fallbackName}`);
+      return fallbackName;
     }
   };
 
   // Create a new remixed agent for this session (only called once)
   const createSessionAgent = async (): Promise<string> => {
-    try {
-      const newAgentName = await findNextAgentName();
-      await remixAgent('lway-performance-overview', newAgentName);
-      setSessionAgent(newAgentName);
-      setIsFirstMessage(false);
-      console.log('Session agent created:', newAgentName);
-      return newAgentName;
-    } catch (err) {
-      console.error('Failed to remix agent:', err);
-      throw err;
+    const maxRetries = 3;
+    let lastError;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const newAgentName = await findNextAgentName();
+        console.log(`Attempt ${attempt}: Trying to create agent with name:`, newAgentName);
+
+        await remixAgent('lway-performance-overview', newAgentName);
+        setSessionAgent(newAgentName);
+        setIsFirstMessage(false);
+        console.log('Session agent created:', newAgentName);
+
+        // Load the new agent's report to the canvas
+        await loadHtmlFile(newAgentName);
+        console.log('Loaded remixed agent report to canvas');
+
+        return newAgentName;
+      } catch (err: any) {
+        console.error(`Attempt ${attempt} failed:`, err);
+        lastError = err;
+
+        // If this is an agent name conflict and we have retries left, try again
+        if (err?.message?.includes('already exists') && attempt < maxRetries) {
+          console.log(`Agent name conflict detected, retrying (${attempt}/${maxRetries})...`);
+          // Add a small delay to help with race conditions
+          await new Promise(resolve => setTimeout(resolve, 500));
+          continue;
+        }
+
+        // If it's not a name conflict or we're out of retries, throw immediately
+        throw err;
+      }
     }
+
+    throw lastError;
   };
 
   // Auto-load existing report
@@ -119,7 +155,24 @@ function CanvasContent() {
     const loadInitialHtml = async () => {
       if (!initializedRef.current) {
         initializedRef.current = true;
-        await loadHtmlFile('lway-performance-overview'); // Load HTML file from original agent
+
+        // Load the initial report from the specific URL
+        try {
+          const response = await fetch('https://ra-hyp-1.raworc.com/content/lway-performance-overview/lifeway_performance_report.html');
+          if (response.ok) {
+            const htmlContent = await response.text();
+            setHtmlContent(htmlContent);
+            console.log('Initial report loaded from URL');
+          } else {
+            console.error('Failed to load initial report from URL:', response.statusText);
+            // Fallback to agent API if URL fails
+            await loadHtmlFile('lway-performance-overview');
+          }
+        } catch (err) {
+          console.error('Error loading initial report from URL:', err);
+          // Fallback to agent API if URL fails
+          await loadHtmlFile('lway-performance-overview');
+        }
       }
     };
     loadInitialHtml();
@@ -341,6 +394,17 @@ function CanvasContent() {
                 >
                   <Download className="w-4 h-4 inline mr-1" />
                   Download
+                </button>
+                <button
+                  onClick={() => setViewMode('preview')}
+                  className={`px-3 py-1 rounded-md text-sm transition-all ${
+                    viewMode === 'preview'
+                      ? 'bg-[#000721] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  <Eye className="w-4 h-4 inline mr-1" />
+                  Preview
                 </button>
                 <button
                   onClick={() => setViewMode('code')}
