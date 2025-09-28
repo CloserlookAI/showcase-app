@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
   const prefix = searchParams.get('prefix') || '';
 
   try {
-    // Get all agents with the specified prefix
-    const response = await fetch(`${API_BASE_URL}/agents?q=${prefix}&limit=100`, {
+    // Get all agents with the specified prefix (increase limit to ensure we get all)
+    const response = await fetch(`${API_BASE_URL}/agents?q=${prefix}&limit=1000`, {
       headers: {
         'Authorization': `Bearer ${BEARER_TOKEN}`,
       },

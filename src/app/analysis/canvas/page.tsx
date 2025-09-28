@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import { Message } from '@/types/chat';
 import { sendMessageToSpecificAgent, getHtmlFromAgent, remixAgent, listAgents } from '@/lib/api';
-import { Send, Copy, Download, Code } from 'lucide-react';
+import { Send, Copy, Download, Code, Eye } from 'lucide-react';
 
 function CanvasContent() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -12,7 +12,7 @@ function CanvasContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [thinkingText, setThinkingText] = useState('Agent is thinking...');
-  const [htmlContent, setHtmlContent] = useState('<h1>Performance Report</h1><p>Waiting for agent to generate report...</p>');
+  const [htmlContent, setHtmlContent] = useState('<iframe src="https://ra-hyp-1.raworc.com/content/lway-performance-overview/lifeway_performance_report.html" style="width: 100%; height: 100%; border: none;" title="Performance Report"></iframe>');
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview');
   const [sessionAgent, setSessionAgent] = useState<string | null>(null);
   const [isFirstMessage, setIsFirstMessage] = useState<boolean>(true);
@@ -72,16 +72,19 @@ function CanvasContent() {
     try {
       // Get all agents with the base name prefix
       const { agents } = await listAgents(baseAgentName);
+      console.log(`Found ${agents.length} agents with prefix '${baseAgentName}'`);
 
       let highestNumber = 0;
+      const existingNumbers = new Set<number>();
 
-      // Find the highest number from existing agents
+      // Find the highest number from existing agents and track all numbers
       agents.forEach((agent: { name: string }) => {
         const agentName = agent.name;
         // Check if agent name matches pattern: lway-performance-overview-NUMBER
         const match = agentName.match(/^lway-performance-overview-(\d+)$/);
         if (match) {
           const number = parseInt(match[1], 10);
+          existingNumbers.add(number);
           if (number > highestNumber) {
             highestNumber = number;
           }
@@ -90,28 +93,62 @@ function CanvasContent() {
 
       // Return next sequential number
       const nextNumber = highestNumber + 1;
-      return `${baseAgentName}-${nextNumber}`;
+      const nextName = `${baseAgentName}-${nextNumber}`;
+
+      console.log(`Next available agent name: ${nextName} (highest existing: ${highestNumber})`);
+      console.log(`Existing numbers: [${Array.from(existingNumbers).sort((a, b) => a - b).join(', ')}]`);
+
+      return nextName;
 
     } catch (err) {
       console.error('Error finding next agent name:', err);
-      // If listing fails, default to -1
-      return `${baseAgentName}-1`;
+      // If listing fails, generate a random number to avoid conflicts
+      const randomNumber = Math.floor(Math.random() * 1000) + 1;
+      const fallbackName = `${baseAgentName}-${randomNumber}`;
+      console.log(`Using fallback agent name: ${fallbackName}`);
+      return fallbackName;
     }
   };
 
   // Create a new remixed agent for this session (only called once)
   const createSessionAgent = async (): Promise<string> => {
-    try {
-      const newAgentName = await findNextAgentName();
-      await remixAgent('lway-performance-overview', newAgentName);
-      setSessionAgent(newAgentName);
-      setIsFirstMessage(false);
-      console.log('Session agent created:', newAgentName);
-      return newAgentName;
-    } catch (err) {
-      console.error('Failed to remix agent:', err);
-      throw err;
+    const maxRetries = 3;
+    let lastError;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const newAgentName = await findNextAgentName();
+        console.log(`Attempt ${attempt}: Trying to create agent with name:`, newAgentName);
+
+        await remixAgent('lway-performance-overview', newAgentName);
+        setSessionAgent(newAgentName);
+        setIsFirstMessage(false);
+        console.log('Session agent created:', newAgentName);
+
+        // Load the new agent's report to the canvas
+        await loadHtmlFile(newAgentName);
+        console.log('Loaded remixed agent report to canvas');
+
+        return newAgentName;
+      } catch (err) {
+        console.error(`Attempt ${attempt} failed:`, err);
+        lastError = err;
+
+        // If this is an agent name conflict and we have retries left, try again
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        if (errorMessage.includes('already exists') && attempt < maxRetries) {
+          console.log(`Agent name conflict detected, retrying (${attempt}/${maxRetries})...`);
+          // Add a small delay to help with race conditions
+          await new Promise(resolve => setTimeout(resolve, 500));
+          continue;
+        }
+
+        // If it's not a name conflict or we're out of retries, throw immediately
+        throw err;
+      }
     }
+
+    throw lastError;
   };
 
   // Auto-load existing report
@@ -119,7 +156,9 @@ function CanvasContent() {
     const loadInitialHtml = async () => {
       if (!initializedRef.current) {
         initializedRef.current = true;
-        await loadHtmlFile('lway-performance-overview'); // Load HTML file from original agent
+
+        // Initial report is already set in state - no need to load anything
+        console.log('Initial report loaded via iframe');
       }
     };
     loadInitialHtml();
@@ -129,11 +168,13 @@ function CanvasContent() {
     const finalMessage = messageText || input;
     if (!finalMessage.trim() || isLoading) return;
 
+    // Generate a stable ID that won't cause hydration issues
+    const timestamp = Date.now();
     const userMessage: Message = {
-      id: Date.now() + Math.random().toString(),
+      id: `user-${timestamp}`,
       role: 'user',
       content: finalMessage.trim(),
-      created_at: new Date().toISOString(),
+      created_at: new Date(timestamp).toISOString(),
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -199,7 +240,7 @@ function CanvasContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#000721] via-[#1e293b] to-[#334155] p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#000721] via-[#1e293b] to-[#334155] p-6" suppressHydrationWarning>
       {/* Main Content - Split Screen */}
       <div className="h-[calc(100vh-3rem)] flex flex-col lg:flex-row gap-6 overflow-hidden">
         {/* Left Panel - Chat */}
@@ -343,6 +384,17 @@ function CanvasContent() {
                   Download
                 </button>
                 <button
+                  onClick={() => setViewMode('preview')}
+                  className={`px-3 py-1 rounded-md text-sm transition-all ${
+                    viewMode === 'preview'
+                      ? 'bg-[#000721] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  <Eye className="w-4 h-4 inline mr-1" />
+                  Preview
+                </button>
+                <button
                   onClick={() => setViewMode('code')}
                   className={`px-3 py-1 rounded-md text-sm transition-all ${
                     viewMode === 'code'
@@ -370,11 +422,20 @@ function CanvasContent() {
             ) : (
               <div className="h-full p-6">
                 <div className="h-full bg-white rounded-lg border border-white/20 shadow-inner">
-                  <iframe
-                    srcDoc={htmlContent}
-                    className="w-full h-full border-0 rounded-lg"
-                    title="Report Preview"
-                  />
+                  {htmlContent.includes('<iframe src=') ? (
+                    // If htmlContent is an iframe, render it directly
+                    <div
+                      dangerouslySetInnerHTML={{ __html: htmlContent }}
+                      className="w-full h-full border-0 rounded-lg"
+                    />
+                  ) : (
+                    // Otherwise use srcDoc as before
+                    <iframe
+                      srcDoc={htmlContent}
+                      className="w-full h-full border-0 rounded-lg"
+                      title="Report Preview"
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -386,6 +447,20 @@ function CanvasContent() {
 }
 
 export default function CanvasPage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-white">Loading Canvas...</div>
+      </div>
+    );
+  }
+
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
