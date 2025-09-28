@@ -12,7 +12,7 @@ function CanvasContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [thinkingText, setThinkingText] = useState('Agent is thinking...');
-  const [htmlContent, setHtmlContent] = useState('<h1>Performance Report</h1><p>Waiting for agent to generate report...</p>');
+  const [htmlContent, setHtmlContent] = useState('<iframe src="https://ra-hyp-1.raworc.com/content/lway-performance-overview/lifeway_performance_report.html" style="width: 100%; height: 100%; border: none;" title="Performance Report"></iframe>');
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview');
   const [sessionAgent, setSessionAgent] = useState<string | null>(null);
   const [isFirstMessage, setIsFirstMessage] = useState<boolean>(true);
@@ -130,12 +130,13 @@ function CanvasContent() {
         console.log('Loaded remixed agent report to canvas');
 
         return newAgentName;
-      } catch (err: any) {
+      } catch (err) {
         console.error(`Attempt ${attempt} failed:`, err);
         lastError = err;
 
         // If this is an agent name conflict and we have retries left, try again
-        if (err?.message?.includes('already exists') && attempt < maxRetries) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        if (errorMessage.includes('already exists') && attempt < maxRetries) {
           console.log(`Agent name conflict detected, retrying (${attempt}/${maxRetries})...`);
           // Add a small delay to help with race conditions
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -156,23 +157,8 @@ function CanvasContent() {
       if (!initializedRef.current) {
         initializedRef.current = true;
 
-        // Load the initial report from the specific URL
-        try {
-          const response = await fetch('https://ra-hyp-1.raworc.com/content/lway-performance-overview/lifeway_performance_report.html');
-          if (response.ok) {
-            const htmlContent = await response.text();
-            setHtmlContent(htmlContent);
-            console.log('Initial report loaded from URL');
-          } else {
-            console.error('Failed to load initial report from URL:', response.statusText);
-            // Fallback to agent API if URL fails
-            await loadHtmlFile('lway-performance-overview');
-          }
-        } catch (err) {
-          console.error('Error loading initial report from URL:', err);
-          // Fallback to agent API if URL fails
-          await loadHtmlFile('lway-performance-overview');
-        }
+        // Initial report is already set in state - no need to load anything
+        console.log('Initial report loaded via iframe');
       }
     };
     loadInitialHtml();
@@ -182,11 +168,13 @@ function CanvasContent() {
     const finalMessage = messageText || input;
     if (!finalMessage.trim() || isLoading) return;
 
+    // Generate a stable ID that won't cause hydration issues
+    const timestamp = Date.now();
     const userMessage: Message = {
-      id: Date.now() + Math.random().toString(),
+      id: `user-${timestamp}`,
       role: 'user',
       content: finalMessage.trim(),
-      created_at: new Date().toISOString(),
+      created_at: new Date(timestamp).toISOString(),
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -252,7 +240,7 @@ function CanvasContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#000721] via-[#1e293b] to-[#334155] p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#000721] via-[#1e293b] to-[#334155] p-6" suppressHydrationWarning>
       {/* Main Content - Split Screen */}
       <div className="h-[calc(100vh-3rem)] flex flex-col lg:flex-row gap-6 overflow-hidden">
         {/* Left Panel - Chat */}
@@ -434,11 +422,20 @@ function CanvasContent() {
             ) : (
               <div className="h-full p-6">
                 <div className="h-full bg-white rounded-lg border border-white/20 shadow-inner">
-                  <iframe
-                    srcDoc={htmlContent}
-                    className="w-full h-full border-0 rounded-lg"
-                    title="Report Preview"
-                  />
+                  {htmlContent.includes('<iframe src=') ? (
+                    // If htmlContent is an iframe, render it directly
+                    <div
+                      dangerouslySetInnerHTML={{ __html: htmlContent }}
+                      className="w-full h-full border-0 rounded-lg"
+                    />
+                  ) : (
+                    // Otherwise use srcDoc as before
+                    <iframe
+                      srcDoc={htmlContent}
+                      className="w-full h-full border-0 rounded-lg"
+                      title="Report Preview"
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -450,6 +447,20 @@ function CanvasContent() {
 }
 
 export default function CanvasPage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-white">Loading Canvas...</div>
+      </div>
+    );
+  }
+
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
