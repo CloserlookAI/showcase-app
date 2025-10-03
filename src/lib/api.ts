@@ -72,9 +72,40 @@ class ApiClient {
     });
   }
 
-  async listAgents(prefix: string): Promise<{ agents: Array<{ name: string }>; total: number }> {
-    return this.request(`/api/remix-agent/list-agents?prefix=${prefix}`);
+  async listAgents(prefix: string, limit: number = 100, page: number = 1): Promise<{
+    agents: Array<{
+      name: string;
+      created_by: string;
+      state: string;
+      description: string | null;
+      parent_agent_name: string | null;
+      created_at: string;
+      last_activity_at: string | null;
+      metadata: object;
+      tags: string[];
+    }>;
+    total: number;
+    page: number;
+    pages: number;
+    limit: number;
+  }> {
+    return this.request(`/api/remix-agent/list-agents?prefix=${prefix}&limit=${limit}&page=${page}`);
   }
+
+  async getAgentState(agentName: string): Promise<{ state: string; [key: string]: unknown }> {
+    return this.request(`/api/remix-agent/state?agentName=${agentName}`);
+  }
+
+  async wakeAgent(agentName: string, prompt?: string): Promise<unknown> {
+    return this.request('/api/remix-agent/wake', {
+      method: 'POST',
+      body: JSON.stringify({
+        agentName,
+        prompt,
+      }),
+    });
+  }
+
 }
 
 const apiClient = new ApiClient();
@@ -108,6 +139,31 @@ export const remixAgent = (parentAgentName: string, newAgentName: string): Promi
   return apiClient.remixAgent(parentAgentName, newAgentName);
 };
 
-export const listAgents = (prefix: string): Promise<{ agents: Array<{ name: string }>; total: number }> => {
-  return apiClient.listAgents(prefix);
+export const getAgentState = (agentName: string): Promise<{ state: string; [key: string]: unknown }> => {
+  return apiClient.getAgentState(agentName);
 };
+
+export const wakeAgent = (agentName: string, prompt?: string): Promise<unknown> => {
+  return apiClient.wakeAgent(agentName, prompt);
+};
+
+export const listAgents = (prefix: string, limit?: number, page?: number): Promise<{
+  agents: Array<{
+    name: string;
+    created_by: string;
+    state: string;
+    description: string | null;
+    parent_agent_name: string | null;
+    created_at: string;
+    last_activity_at: string | null;
+    metadata: object;
+    tags: string[];
+  }>;
+  total: number;
+  page: number;
+  pages: number;
+  limit: number;
+}> => {
+  return apiClient.listAgents(prefix, limit, page);
+};
+

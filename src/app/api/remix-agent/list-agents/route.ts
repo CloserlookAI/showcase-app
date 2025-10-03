@@ -13,10 +13,14 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const prefix = searchParams.get('prefix') || '';
+  const limit = parseInt(searchParams.get('limit') || '100');
+  const page = parseInt(searchParams.get('page') || '1');
 
   try {
-    // Get all agents with the specified prefix (increase limit to ensure we get all)
-    const response = await fetch(`${API_BASE_URL}/agents?q=${prefix}&limit=1000`, {
+    // Get agents with the specified prefix using proper pagination
+    const apiUrl = `${API_BASE_URL}/agents?q=${encodeURIComponent(prefix)}&limit=${limit}&page=${page}`;
+
+    const response = await fetch(apiUrl, {
       headers: {
         'Authorization': `Bearer ${BEARER_TOKEN}`,
       },
@@ -40,7 +44,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       agents: data.items || [],
-      total: data.total || 0
+      total: data.total || 0,
+      page: data.page || 1,
+      pages: data.pages || 1,
+      limit: data.limit || limit
     });
   } catch {
     return NextResponse.json(

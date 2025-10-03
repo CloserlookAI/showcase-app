@@ -21,44 +21,75 @@ export async function POST(request: NextRequest) {
 
   try {
     const { content: userMessage } = await request.json();
-    // Step 1: Send user message
-    const userMessageResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/responses`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${BEARER_TOKEN}`,
-      },
-      body: JSON.stringify({
-        input: {
-          content: [
-            {
-              type: "text",
-              content: userMessage
-            }
-          ]
+
+    // Step 1: Send user message with retry logic for busy agent
+    const maxRetries = 10; // Retry up to 10 times
+    const retryDelay = 2000; // Start with 2 second delay
+    let userMessageResponse;
+    let lastError = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      userMessageResponse = await fetch(`${API_BASE_URL}/agents/${AGENT_NAME}/responses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${BEARER_TOKEN}`,
         },
-        background: true,
-      }),
-    });
+        body: JSON.stringify({
+          input: {
+            content: [
+              {
+                type: "text",
+                content: userMessage
+              }
+            ]
+          },
+          background: true,
+        }),
+      });
 
+      // If successful or not a 409 error, break out of retry loop
+      if (userMessageResponse.ok || userMessageResponse.status !== 409) {
+        break;
+      }
 
-    if (!userMessageResponse.ok) {
-      let errorMessage = `HTTP ${userMessageResponse.status}: ${userMessageResponse.statusText}`;
+      // If 409 (Agent is busy), retry after delay
+      if (userMessageResponse.status === 409) {
+        try {
+          const errorData = await userMessageResponse.json();
+          lastError = errorData;
+          console.log(`Attempt ${attempt + 1}/${maxRetries}: Agent is busy, retrying in ${retryDelay}ms...`);
+        } catch (e) {
+          console.error('Failed to parse error response:', e);
+        }
+
+        // Wait before retrying (only if not the last attempt)
+        if (attempt < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
+      }
+    }
+
+    if (!userMessageResponse!.ok) {
+      let errorMessage = `HTTP ${userMessageResponse!.status}: ${userMessageResponse!.statusText}`;
+      let errorDetails = null;
 
       try {
-        const errorData = await userMessageResponse.json();
+        const errorData = lastError || await userMessageResponse!.json();
         errorMessage = errorData.message || errorMessage;
-      } catch {
-        // If we can't parse the error response, use the default message
+        errorDetails = errorData;
+        console.error('RemoteAgent API Error after retries:', errorData);
+      } catch (e) {
+        console.error('Failed to parse error response:', e);
       }
 
       return NextResponse.json(
-        { error: errorMessage },
-        { status: userMessageResponse.status }
+        { error: errorMessage, details: errorDetails },
+        { status: userMessageResponse!.status }
       );
     }
 
-    const initialResponse = await userMessageResponse.json();
+    const initialResponse = await userMessageResponse!.json();
 
     // If background=false timed out (504), fall back to polling
     let finalResponse = initialResponse;
@@ -153,9 +184,10 @@ export async function POST(request: NextRequest) {
     };
 
     return NextResponse.json(transformedResponse);
-  } catch {
+  } catch (error) {
+    console.error('Error in POST /api/agent/messages:', error);
     return NextResponse.json(
-      { error: 'Failed to send message to agent' },
+      { error: 'Failed to send message to agent', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { Message } from '@/types/chat';
-import { sendMessageToSpecificAgent, getHtmlFromAgent, remixAgent, listAgents } from '@/lib/api';
+import { sendMessageToSpecificAgent, remixAgent, listAgents, wakeAgent, getHtmlFromAgent, getAgentState } from '@/lib/api';
 import { Send, Copy, Download, Code, Eye } from 'lucide-react';
+import AgentDropdown from '@/components/AgentList';
 
 function CanvasContent() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -12,12 +13,12 @@ function CanvasContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [thinkingText, setThinkingText] = useState('Agent is thinking...');
-  const [htmlContent, setHtmlContent] = useState('<iframe src="https://ra-hyp-1.raworc.com/content/lway-performance-overview/lifeway_performance_report.html" style="width: 100%; height: 100%; border: none;" title="Performance Report"></iframe>');
+  const [htmlContent, setHtmlContent] = useState('');
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview');
   const [sessionAgent, setSessionAgent] = useState<string | null>(null);
   const [isFirstMessage, setIsFirstMessage] = useState<boolean>(true);
+  const [isLoadingHtml, setIsLoadingHtml] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const initializedRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -54,63 +55,71 @@ function CanvasContent() {
     };
   }, [isLoading]);
 
-  // Load HTML file from specified agent
-  const loadHtmlFile = useCallback(async (agentName: string = 'lway-performance-overview') => {
+  const loadHtmlFromAgent = async (agentName: string) => {
     try {
-      const response = await getHtmlFromAgent(agentName);
-      setHtmlContent(response.content);
+      setIsLoadingHtml(true);
+      setError(null);
+      console.log(`Loading HTML for agent: ${agentName}`);
+
+      // Fetch via RemoteAgent API (this will wake the agent)
+      const htmlData = await getHtmlFromAgent(agentName);
+
+      console.log(`HTML loaded successfully, length: ${htmlData.content.length}`);
+      console.log('HTML content preview:', htmlData.content.substring(0, 200));
+
+      if (!htmlData.content || htmlData.content.trim() === '') {
+        throw new Error('Empty HTML content received');
+      }
+
+      setHtmlContent(htmlData.content);
     } catch (err) {
-      console.error('Failed to load HTML file:', err);
-      setHtmlContent('<h1>Error</h1><p>Failed to load performance report from agent.</p>');
-    }
-  }, []);
-
-  // Find next available sequential agent name by finding highest number
-  const findNextAgentName = async (): Promise<string> => {
-    const baseAgentName = 'lway-performance-overview';
-
-    try {
-      // Get all agents with the base name prefix
-      const { agents } = await listAgents(baseAgentName);
-      console.log(`Found ${agents.length} agents with prefix '${baseAgentName}'`);
-
-      let highestNumber = 0;
-      const existingNumbers = new Set<number>();
-
-      // Find the highest number from existing agents and track all numbers
-      agents.forEach((agent: { name: string }) => {
-        const agentName = agent.name;
-        // Check if agent name matches pattern: lway-performance-overview-NUMBER
-        const match = agentName.match(/^lway-performance-overview-(\d+)$/);
-        if (match) {
-          const number = parseInt(match[1], 10);
-          existingNumbers.add(number);
-          if (number > highestNumber) {
-            highestNumber = number;
-          }
-        }
-      });
-
-      // Return next sequential number
-      const nextNumber = highestNumber + 1;
-      const nextName = `${baseAgentName}-${nextNumber}`;
-
-      console.log(`Next available agent name: ${nextName} (highest existing: ${highestNumber})`);
-      console.log(`Existing numbers: [${Array.from(existingNumbers).sort((a, b) => a - b).join(', ')}]`);
-
-      return nextName;
-
-    } catch (err) {
-      console.error('Error finding next agent name:', err);
-      // If listing fails, generate a random number to avoid conflicts
-      const randomNumber = Math.floor(Math.random() * 1000) + 1;
-      const fallbackName = `${baseAgentName}-${randomNumber}`;
-      console.log(`Using fallback agent name: ${fallbackName}`);
-      return fallbackName;
+      console.error('Failed to load HTML:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Failed to load HTML report';
+      setError(errorMsg);
+      setHtmlContent('');
+    } finally {
+      setIsLoadingHtml(false);
     }
   };
 
-  // Create a new remixed agent for this session (only called once)
+  useEffect(() => {
+    const initializeBaseAgent = async () => {
+      try {
+        // Check agent state and wake if sleeping
+        const agentData = await getAgentState('lway-performance-overview');
+        if (agentData.state === 'slept') {
+          console.log('Agent is sleeping, waking it up...');
+          await wakeAgent('lway-performance-overview');
+        }
+        // Load HTML
+        await loadHtmlFromAgent('lway-performance-overview');
+      } catch (err) {
+        console.error('Failed to initialize base agent:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load base agent');
+      }
+    };
+
+    initializeBaseAgent();
+  }, []);
+
+  const findNextAgentName = async (): Promise<string> => {
+    const baseAgentName = 'lway-performance-overview';
+    const { agents } = await listAgents(baseAgentName);
+
+    let highestNumber = 0;
+    agents.forEach((agent: { name: string }) => {
+      const match = agent.name.match(/^lway-performance-overview-(\d+)$/);
+      if (match) {
+        const number = parseInt(match[1], 10);
+        if (number > highestNumber) {
+          highestNumber = number;
+        }
+      }
+    });
+
+    return `${baseAgentName}-${highestNumber + 1}`;
+  };
+
   const createSessionAgent = async (): Promise<string> => {
     const maxRetries = 3;
     let lastError;
@@ -118,51 +127,38 @@ function CanvasContent() {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const newAgentName = await findNextAgentName();
-        console.log(`Attempt ${attempt}: Trying to create agent with name:`, newAgentName);
+        console.log(`Creating new agent: ${newAgentName}`);
 
         await remixAgent('lway-performance-overview', newAgentName);
+        console.log(`Agent created: ${newAgentName}`);
+
+        // Check agent state and wake if sleeping
+        const agentData = await getAgentState(newAgentName);
+        if (agentData.state === 'slept') {
+          console.log('Agent is sleeping, waking it up...');
+          await wakeAgent(newAgentName);
+        }
+
         setSessionAgent(newAgentName);
         setIsFirstMessage(false);
-        console.log('Session agent created:', newAgentName);
 
-        // Load the new agent's report to the canvas
-        await loadHtmlFile(newAgentName);
-        console.log('Loaded remixed agent report to canvas');
+        // Load HTML from the agent (remixing copies content from parent)
+        await loadHtmlFromAgent(newAgentName);
 
         return newAgentName;
       } catch (err) {
-        console.error(`Attempt ${attempt} failed:`, err);
         lastError = err;
-
-        // If this is an agent name conflict and we have retries left, try again
         const errorMessage = err instanceof Error ? err.message : String(err);
         if (errorMessage.includes('already exists') && attempt < maxRetries) {
-          console.log(`Agent name conflict detected, retrying (${attempt}/${maxRetries})...`);
-          // Add a small delay to help with race conditions
           await new Promise(resolve => setTimeout(resolve, 500));
           continue;
         }
-
-        // If it's not a name conflict or we're out of retries, throw immediately
         throw err;
       }
     }
 
     throw lastError;
   };
-
-  // Auto-load existing report
-  useEffect(() => {
-    const loadInitialHtml = async () => {
-      if (!initializedRef.current) {
-        initializedRef.current = true;
-
-        // Initial report is already set in state - no need to load anything
-        console.log('Initial report loaded via iframe');
-      }
-    };
-    loadInitialHtml();
-  }, [loadHtmlFile]);
 
   const handleSubmit = async (messageText?: string) => {
     const finalMessage = messageText || input;
@@ -209,8 +205,8 @@ function CanvasContent() {
 
       setMessages(prev => [...prev, agentMessage]);
 
-      // Refresh HTML file from the session agent (in case agent updated the report)
-      await loadHtmlFile(targetAgent);
+      // Refresh HTML content from the agent
+      await loadHtmlFromAgent(targetAgent);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
@@ -239,15 +235,48 @@ function CanvasContent() {
     URL.revokeObjectURL(url);
   };
 
+  const handleSelectAgent = async (agentName: string) => {
+    console.log('Selecting agent:', agentName);
+    setSessionAgent(agentName);
+    setIsFirstMessage(false);
+    setError(null);
+    setMessages([]);
+    setHtmlContent(''); // Clear previous content
+
+    try {
+      // Check agent state and wake if sleeping
+      const agentData = await getAgentState(agentName);
+      if (agentData.state === 'slept') {
+        console.log('Agent is sleeping, waking it up...');
+        await wakeAgent(agentName);
+      }
+
+      await loadHtmlFromAgent(agentName);
+      console.log('Successfully loaded HTML for agent:', agentName);
+    } catch (err) {
+      console.error('Error loading HTML for agent:', agentName, err);
+      setError(err instanceof Error ? err.message : 'Failed to load HTML for selected agent');
+    }
+  };
+
+  const handleCreateNewAgent = async () => {
+    try {
+      await createSessionAgent();
+      setMessages([]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create new agent');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#000721] via-[#1e293b] to-[#334155] p-6" suppressHydrationWarning>
       {/* Main Content - Split Screen */}
       <div className="h-[calc(100vh-3rem)] flex flex-col lg:flex-row gap-6 overflow-hidden">
         {/* Left Panel - Chat */}
         <div className="w-full lg:w-1/3 flex flex-col bg-white/95 backdrop-blur-sm rounded-xl border border-white/20 shadow-xl">
-          <div className="flex-shrink-0 p-6 border-b border-white/20">
+          <div className="flex-shrink-0 p-6 border-b border-white/20 overflow-visible relative">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
                 <div className="w-5 h-5 rounded-full overflow-hidden">
                   <Image
                     src="https://avatars.githubusercontent.com/u/223376538?s=200&v=4"
@@ -258,6 +287,13 @@ function CanvasContent() {
                   />
                 </div>
                 <h2 className="text-lg font-semibold text-[#000721]">Discussion</h2>
+              </div>
+              <div className="flex items-center space-x-3">
+                <AgentDropdown
+                  onSelectAgent={handleSelectAgent}
+                  onCreateNewAgent={handleCreateNewAgent}
+                  currentAgent={sessionAgent}
+                />
               </div>
             </div>
           </div>
@@ -421,20 +457,22 @@ function CanvasContent() {
               </div>
             ) : (
               <div className="h-full p-6">
-                <div className="h-full bg-white rounded-lg border border-white/20 shadow-inner">
-                  {htmlContent.includes('<iframe src=') ? (
-                    // If htmlContent is an iframe, render it directly
-                    <div
-                      dangerouslySetInnerHTML={{ __html: htmlContent }}
-                      className="w-full h-full border-0 rounded-lg"
-                    />
-                  ) : (
-                    // Otherwise use srcDoc as before
+                <div className="h-full bg-white rounded-lg border border-white/20 shadow-inner relative">
+                  {isLoadingHtml ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-gray-500">Loading report...</div>
+                    </div>
+                  ) : htmlContent ? (
                     <iframe
                       srcDoc={htmlContent}
                       className="w-full h-full border-0 rounded-lg"
                       title="Report Preview"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
                     />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-gray-500">No report available</div>
+                    </div>
                   )}
                 </div>
               </div>

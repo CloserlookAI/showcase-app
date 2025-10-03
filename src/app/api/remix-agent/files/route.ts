@@ -22,8 +22,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Fetch HTML file from specified agent - path is part of URL
-    const response = await fetch(`${API_BASE_URL}/agents/${agentName}/files/read/content/lifeway_performance_report.html`, {
+    // Use Files API to read from agent's /agent workspace
+    // Path is relative to /agent (no leading slash)
+    const filesApiUrl = `${API_BASE_URL}/agents/${agentName}/files/read/content/lifeway_performance_report.html`;
+
+    const response = await fetch(filesApiUrl, {
       headers: {
         'Authorization': `Bearer ${BEARER_TOKEN}`,
       },
@@ -31,12 +34,11 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorMessage;
+        errorMessage = errorData.message || errorData.error || errorMessage;
       } catch {
-        // If we can't parse the error response, use the default message
+        // If we can't parse error, use default message
       }
 
       return NextResponse.json(
@@ -45,18 +47,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the HTML content
+    // The Files API returns raw bytes with Content-Type header
     const htmlContent = await response.text();
 
     return NextResponse.json({
       content: htmlContent,
       contentType: 'text/html',
-      path: 'content/lifeway_performance_report.html',
+      path: `content/lifeway_performance_report.html`,
       agent: agentName
     });
-  } catch {
+  } catch (error) {
+    console.error('Error fetching HTML file:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch HTML file from remix agent' },
+      { error: 'Failed to fetch HTML file from remix agent', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

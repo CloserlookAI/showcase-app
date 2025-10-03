@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Message } from '@/types/chat';
 import { sendMessageToAgent } from '@/lib/api';
-import { ArrowLeft, Send, Copy, Download, Share } from 'lucide-react';
+import { ArrowLeft, Send, Copy } from 'lucide-react';
 
 function ResponsePageContent() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -16,6 +16,7 @@ function ResponsePageContent() {
   const [error, setError] = useState<string | null>(null);
   const [thinkingText, setThinkingText] = useState('Agent is thinking...');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasInitialMessageSent = useRef(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const query = searchParams.get('query');
@@ -57,7 +58,9 @@ function ResponsePageContent() {
 
   // Auto-send initial query when component mounts
   useEffect(() => {
-    if (query && messages.length === 0 && !isLoading) {
+    if (query && !hasInitialMessageSent.current) {
+      hasInitialMessageSent.current = true;
+
       const userMessage: Message = {
         id: Date.now() + Math.random().toString(),
         role: 'user',
@@ -87,7 +90,7 @@ function ResponsePageContent() {
           setIsLoading(false);
         });
     }
-  }, [query, isLoading, messages.length]);
+  }, [query]);
 
   const handleSubmit = async (messageText?: string) => {
     const finalMessage = messageText || input;
@@ -297,18 +300,6 @@ function ResponsePageContent() {
             </div>
           </CardContent>
         </Card>
-
-      {/* Action Buttons */}
-      <div className="flex justify-center space-x-4">
-        <button className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-300 transition-colors shadow-sm">
-          <Download className="w-4 h-4" />
-          <span className="text-sm">Export Chat</span>
-        </button>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-300 transition-colors shadow-sm">
-          <Share className="w-4 h-4" />
-          <span className="text-sm">Share Analysis</span>
-        </button>
-      </div>
     </div>
   );
 }
