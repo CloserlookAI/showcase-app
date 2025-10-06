@@ -162,6 +162,24 @@ export default function AnalysisSection() {
                     </div>
                   </div>
                 </div>
+
+                <div className="mt-4 pt-3 border-t border-gray-200">
+                  <button
+                    onClick={() => router.push('/analysis/market-canvas')}
+                    className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-[#000721] text-white rounded-lg hover:bg-[#1e293b] focus:outline-none focus:ring-2 focus:ring-[#000721]/50 transition-all text-sm font-medium"
+                  >
+                    <div className="w-4 h-4 rounded-full overflow-hidden flex items-center justify-center">
+                      <Image
+                        src="https://avatars.githubusercontent.com/u/223376538?s=200&v=4"
+                        alt="Remote Agent"
+                        width={16}
+                        height={16}
+                        className="object-cover rounded-full"
+                      />
+                    </div>
+                    <span>Discuss</span>
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="text-sm text-red-600">Failed to load data</div>

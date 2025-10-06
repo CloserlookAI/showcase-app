@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { Message } from '@/types/chat';
-import { sendMessageToSpecificAgent, remixAgent, listAgents, wakeAgent, getHtmlFromAgent, getAgentState } from '@/lib/api';
+import { sendMessageToSpecificAgent, remixAgent, listAgents, wakeAgent, getHtmlFromMarketAgent, getAgentState } from '@/lib/api';
 import { Send, Copy, Download, Code, Eye } from 'lucide-react';
 import AgentDropdown from '@/components/AgentList';
 
-function CanvasContent() {
+function MarketCanvasContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,8 +34,8 @@ function CanvasContent() {
       'Processing your request...',
       'Generating report...',
       'Working on it...',
-      'Analyzing data...',
-      'Creating visualizations...'
+      'Analyzing market data...',
+      'Creating competitor analysis...'
     ];
 
     let interval: NodeJS.Timeout;
@@ -61,7 +61,7 @@ function CanvasContent() {
       setError(null);
       console.log(`Loading HTML for agent: ${agentName}`);
 
-      const htmlData = await getHtmlFromAgent(agentName);
+      const htmlData = await getHtmlFromMarketAgent(agentName);
 
       console.log(`HTML loaded successfully, length: ${htmlData.content.length}`);
       console.log('HTML content preview:', htmlData.content.substring(0, 200));
@@ -84,15 +84,15 @@ function CanvasContent() {
   useEffect(() => {
     const initializeBaseAgent = async () => {
       try {
-        const agentData = await getAgentState('lway-performance-overview');
+        const agentData = await getAgentState('lway-market-competitors');
         // Only wake if agent is slept (not init, idle, or busy)
         if (agentData.state === 'slept') {
           console.log('Agent is sleeping, waking it up...');
-          await wakeAgent('lway-performance-overview');
+          await wakeAgent('lway-market-competitors');
           // Wait a moment for agent to wake before loading HTML
           await new Promise(resolve => setTimeout(resolve, 500));
         }
-        await loadHtmlFromAgent('lway-performance-overview');
+        await loadHtmlFromAgent('lway-market-competitors');
       } catch (err) {
         console.error('Failed to initialize base agent:', err);
         setError(err instanceof Error ? err.message : 'Failed to load base agent');
@@ -103,12 +103,12 @@ function CanvasContent() {
   }, []);
 
   const findNextAgentName = async (): Promise<string> => {
-    const baseAgentName = 'lway-performance-overview';
+    const baseAgentName = 'lway-market-competitors';
     const { agents } = await listAgents(baseAgentName);
 
     let highestNumber = 0;
     agents.forEach((agent: { name: string }) => {
-      const match = agent.name.match(/^lway-performance-overview-(\d+)$/);
+      const match = agent.name.match(/^lway-market-competitors-(\d+)$/);
       if (match) {
         const number = parseInt(match[1], 10);
         if (number > highestNumber) {
@@ -129,7 +129,7 @@ function CanvasContent() {
         const newAgentName = await findNextAgentName();
         console.log(`Creating new agent: ${newAgentName}`);
 
-        await remixAgent('lway-performance-overview', newAgentName);
+        await remixAgent('lway-market-competitors', newAgentName);
         console.log(`Agent created: ${newAgentName}`);
 
         // Newly remixed agents are in 'init' state and don't need waking
@@ -221,7 +221,7 @@ function CanvasContent() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'lifeway_performance_report.html';
+    a.download = 'lifeway_market_competitors_report.html';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -287,7 +287,7 @@ function CanvasContent() {
                   onSelectAgent={handleSelectAgent}
                   onCreateNewAgent={handleCreateNewAgent}
                   currentAgent={sessionAgent}
-                  baseAgentName="lway-performance-overview"
+                  baseAgentName="lway-market-competitors"
                 />
               </div>
             </div>
@@ -479,7 +479,7 @@ function CanvasContent() {
   );
 }
 
-export default function CanvasPage() {
+export default function MarketCanvasPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -500,7 +500,7 @@ export default function CanvasPage() {
         <div className="text-white">Loading Canvas...</div>
       </div>
     }>
-      <CanvasContent />
+      <MarketCanvasContent />
     </Suspense>
   );
 }

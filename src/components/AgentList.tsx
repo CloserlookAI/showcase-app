@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { listAgents } from '@/lib/api';
 import { ChevronDown, Bot, Loader, Plus } from 'lucide-react';
 
@@ -20,24 +20,25 @@ interface AgentDropdownProps {
   onSelectAgent: (agentName: string) => void;
   onCreateNewAgent: () => void;
   currentAgent?: string | null;
+  baseAgentName?: string;
 }
 
-export default function AgentDropdown({ onSelectAgent, onCreateNewAgent, currentAgent }: AgentDropdownProps) {
+export default function AgentDropdown({ onSelectAgent, onCreateNewAgent, currentAgent, baseAgentName = 'lway-performance-overview' }: AgentDropdownProps) {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const loadAgents = async () => {
+  const loadAgents = useCallback(async () => {
     try {
       setError(null);
-      const { agents: agentList } = await listAgents('lway-performance-overview', 100, 1);
+      const { agents: agentList } = await listAgents(baseAgentName, 100, 1);
 
       // Sort agents to show base agent first, then by creation date
       const sortedAgents = agentList.sort((a, b) => {
-        if (a.name === 'lway-performance-overview') return -1;
-        if (b.name === 'lway-performance-overview') return 1;
+        if (a.name === baseAgentName) return -1;
+        if (b.name === baseAgentName) return 1;
 
         // Sort by creation date (newest first for non-base agents)
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -49,7 +50,7 @@ export default function AgentDropdown({ onSelectAgent, onCreateNewAgent, current
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseAgentName]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -65,10 +66,10 @@ export default function AgentDropdown({ onSelectAgent, onCreateNewAgent, current
 
   useEffect(() => {
     loadAgents();
-  }, []);
+  }, [loadAgents]);
 
   const getAgentDisplayName = (agent: Agent) => {
-    if (agent.name === 'lway-performance-overview') {
+    if (agent.name === baseAgentName) {
       return 'Base Agent';
     }
 
@@ -78,7 +79,7 @@ export default function AgentDropdown({ onSelectAgent, onCreateNewAgent, current
     }
 
     // Extract number from agent name if it follows the pattern
-    const match = agent.name.match(/lway-performance-overview-(\d+)$/);
+    const match = agent.name.match(new RegExp(`${baseAgentName}-(\\d+)$`));
     if (match) {
       return `Agent #${match[1]}`;
     }
@@ -120,10 +121,10 @@ export default function AgentDropdown({ onSelectAgent, onCreateNewAgent, current
       return getAgentDisplayName(currentAgentData);
     }
 
-    return currentAgent === 'lway-performance-overview' ? 'Base Agent' : currentAgent;
+    return currentAgent === baseAgentName ? 'Base Agent' : currentAgent;
   };
 
-  const isBaseAgent = (agentName: string) => agentName === 'lway-performance-overview';
+  const isBaseAgent = (agentName: string) => agentName === baseAgentName;
 
   return (
     <div className="relative" ref={dropdownRef}>
