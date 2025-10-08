@@ -42,6 +42,13 @@ export async function POST(request: NextRequest) {
       } catch {
         errorData = { message: await response.text() };
       }
+
+      // If agent is in init state, treat as success since it will auto-transition
+      if (errorData.message?.includes('Cannot wake agent in init state')) {
+        console.log(`Agent ${agentName} is in init state, no need to wake`);
+        return NextResponse.json({ success: true, message: 'Agent already initializing' });
+      }
+
       console.error(`Failed to wake agent ${agentName}:`, errorData);
       return NextResponse.json(
         errorData,
