@@ -36,10 +36,15 @@ export async function POST(request: NextRequest) {
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Failed to wake agent ${agentName}:`, errorText);
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { message: await response.text() };
+      }
+      console.error(`Failed to wake agent ${agentName}:`, errorData);
       return NextResponse.json(
-        { error: `Failed to wake agent: ${response.statusText}` },
+        errorData,
         { status: response.status }
       );
     }

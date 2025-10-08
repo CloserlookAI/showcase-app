@@ -66,6 +66,10 @@ class ApiClient {
     return this.request(`/api/market-agent/files?agent=${agentName}`);
   }
 
+  async getHtmlFromNewsAgent(agentName: string): Promise<{ content: string; contentType: string; path: string; agent: string }> {
+    return this.request(`/api/news-agent/files?agent=${agentName}`);
+  }
+
   async remixAgent(parentAgentName: string, newAgentName: string): Promise<{ success: boolean; parentAgent: string; newAgent: string; agentData: unknown }> {
     return this.request('/api/remix-agent/remix', {
       method: 'POST',
@@ -141,6 +145,10 @@ export const getHtmlFromAgent = (agentName: string): Promise<{ content: string; 
 
 export const getHtmlFromMarketAgent = (agentName: string): Promise<{ content: string; contentType: string; path: string; agent: string }> => {
   return apiClient.getHtmlFromMarketAgent(agentName);
+};
+
+export const getHtmlFromNewsAgent = (agentName: string): Promise<{ content: string; contentType: string; path: string; agent: string }> => {
+  return apiClient.getHtmlFromNewsAgent(agentName);
 };
 
 export const remixAgent = (parentAgentName: string, newAgentName: string): Promise<{ success: boolean; parentAgent: string; newAgent: string; agentData: unknown }> => {
